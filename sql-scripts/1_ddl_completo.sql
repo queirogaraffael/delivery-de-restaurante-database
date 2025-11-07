@@ -1,0 +1,196 @@
+CREATE DATABASE "delivery-de-restaurante";
+
+CREATE TYPE TipoAuditoria AS ENUM ('ENTRADA', 'SAIDA', 'AJUSTE');
+CREATE TYPE TipoUnidade AS ENUM ('KG', 'G', 'ML', 'L', 'UN');
+CREATE TYPE TipoPagamentoMetodo AS ENUM ('PIX', 'CARTAO', 'DINHEIRO');
+CREATE TYPE TipoPagamentoStatus AS ENUM ('PENDENTE', 'APROVADO', 'REJEITADO');
+CREATE TYPE TipoPedidoStatus AS ENUM ('CRIADO', 'EM_PROCESSAMENTO', 'PAGO', 'CANCELADO', 'CONCLUIDO');
+CREATE TYPE TipoProducaoStatus AS ENUM ('FEITO', 'FAZENDO', 'PARADO');
+CREATE TYPE TipoEntregaStatus AS ENUM ('PREPARANDO', 'EM_ROTA', 'ENTREGUE', 'FALHA_ENTREGA');
+
+CREATE TABLE Funcionario (
+    id_funcionario INT NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    cpf CHAR(11) UNIQUE NOT NULL,
+    salario DECIMAL(10,2) NOT NULL,
+    cargo VARCHAR(255) NOT NULL,
+    telefone VARCHAR(100) UNIQUE,
+    PRIMARY KEY (id_funcionario)
+);
+
+CREATE TABLE CategoriaProduto (
+    id_categoria INT NOT NULL,
+    nome VARCHAR(50) NOT NULL UNIQUE,
+    descricao VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id_categoria)
+);
+
+CREATE TABLE Produto (
+    id_produto INT NOT NULL,
+    id_categoria INT NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    unidade TipoUnidade,
+    estoque_atual INT,
+    preco_venda DECIMAL(10,2),
+    descricao VARCHAR(255),
+    PRIMARY KEY (id_produto),
+    FOREIGN KEY (id_categoria) REFERENCES CategoriaProduto(id_categoria),
+    CONSTRAINT CHK_Produto_Unidade CHECK (unidade IN ('KG', 'G', 'ML', 'L', 'UN'))
+);
+
+CREATE TABLE Insumo (
+    id_insumo INT NOT NULL,
+    nome VARCHAR(255),
+    unidade TipoUnidade,
+    estoque_atual INT,
+    perecivel BOOLEAN,
+    data_validade DATE,
+    PRIMARY KEY (id_insumo),
+    CONSTRAINT CHK_Insumo_Unidade CHECK (unidade IN ('KG', 'G', 'ML', 'L', 'UN'))
+);
+
+CREATE TABLE Cliente (
+    id_cliente INT NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    cpf CHAR(11) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    telefone VARCHAR(100),
+    PRIMARY KEY (id_cliente)
+);
+
+CREATE TABLE Endereco (
+    id_endereco INT NOT NULL,
+    id_cliente INT NOT NULL UNIQUE,
+    rua VARCHAR(150),
+    numero VARCHAR(10),
+    bairro VARCHAR(100),
+    cidade VARCHAR(100),
+    cep VARCHAR(8),
+    complemento VARCHAR(100),
+    PRIMARY KEY (id_endereco),
+    FOREIGN KEY (id_cliente) REFERENCES Cliente(id_cliente)
+);
+
+CREATE TABLE Pagamento (
+    id_pagamento INT NOT NULL,
+    metodo TipoPagamentoMetodo,
+    status TipoPagamentoStatus,
+    PRIMARY KEY (id_pagamento),
+    CONSTRAINT CHK_Pagamento_Metodo CHECK (metodo IN ('PIX', 'CARTAO', 'DINHEIRO')),
+    CONSTRAINT CHK_Pagamento_Status CHECK (status IN ('PENDENTE', 'APROVADO', 'REJEITADO'))
+);
+
+CREATE TABLE AuditoriaEstoqueProduto (
+    id_auditoriaEstoque INT NOT NULL,
+    id_produto INT NOT NULL,
+    tipo TipoAuditoria NOT NULL,
+    quantidade INT NOT NULL,
+    data DATE NOT NULL,
+    motivo TEXT,
+    PRIMARY KEY (id_auditoriaEstoque),
+    FOREIGN KEY (id_produto) REFERENCES Produto(id_produto),
+    CONSTRAINT CHK_Auditoria_Tipo CHECK (tipo IN ('ENTRADA', 'SAIDA', 'AJUSTE'))
+);
+
+CREATE TABLE Fornecedor (
+    id_fornecedor INT NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    cnpj CHAR(14) UNIQUE NOT NULL,
+    descricao VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id_fornecedor)
+);
+
+CREATE TABLE NotaFiscal (
+    id_notaFiscal INT NOT NULL,
+    id_fornecedor INT NOT NULL,
+    id_pagamento INT,
+    data_nota TIMESTAMP NOT NULL,
+    valor_total DECIMAL(10,2) NOT NULL,
+    PRIMARY KEY (id_notaFiscal),
+    FOREIGN KEY (id_fornecedor) REFERENCES Fornecedor(id_fornecedor),
+    FOREIGN KEY (id_pagamento) REFERENCES Pagamento(id_pagamento)
+);
+
+CREATE TABLE NotaFiscalProduto (
+    id_notaFiscal INT NOT NULL,
+    id_produto INT NOT NULL,
+    quantidade_produto INT NOT NULL,
+    valor_unitario DECIMAL(10,2) NOT NULL,
+    PRIMARY KEY (id_notaFiscal, id_produto),
+    FOREIGN KEY (id_notaFiscal) REFERENCES NotaFiscal(id_notaFiscal),
+    FOREIGN KEY (id_produto) REFERENCES Produto(id_produto)
+);
+
+CREATE TABLE NotaFiscalInsumo (
+    id_notaFiscal INT NOT NULL,
+    id_insumo INT NOT NULL,
+    quantidade_insumo INT NOT NULL,
+    valor_unitario DECIMAL(10,2) NOT NULL,
+    PRIMARY KEY (id_notaFiscal, id_insumo),
+    FOREIGN KEY (id_notaFiscal) REFERENCES NotaFiscal(id_notaFiscal),
+    FOREIGN KEY (id_insumo) REFERENCES Insumo(id_insumo)
+);
+
+CREATE TABLE Pedido (
+    id_pedido INT NOT NULL,
+    id_cliente INT NOT NULL,
+    id_pagamento INT NOT NULL,
+    id_funcionario INT NOT NULL,
+    data_pedido TIMESTAMP NOT NULL,
+    status_pedido TipoPedidoStatus NOT NULL,
+    total_pedido DECIMAL(10,2) NOT NULL,
+    data_pagamento TIMESTAMP,
+    observacao VARCHAR(255),
+    taxaEntrega DECIMAL(10,2),
+    valorItens DECIMAL(10,2),
+    PRIMARY KEY (id_pedido),
+    FOREIGN KEY (id_cliente) REFERENCES Cliente(id_cliente),
+    FOREIGN KEY (id_pagamento) REFERENCES Pagamento(id_pagamento),
+    FOREIGN KEY (id_funcionario) REFERENCES Funcionario(id_funcionario),
+    CONSTRAINT CHK_Pedido_Status CHECK (status_pedido IN ('CRIADO', 'EM_PROCESSAMENTO', 'PAGO', 'CANCELADO', 'CONCLUIDO'))
+);
+
+CREATE TABLE Entrega (
+    id_entrega INT NOT NULL,
+    id_funcionario_entrega INT NOT NULL,
+    pedido_id INT NOT NULL UNIQUE,
+    previsao_entrega TIMESTAMP,
+    status_entrega TipoEntregaStatus,
+    observacoes_entrega TEXT,
+    PRIMARY KEY (id_entrega),
+    FOREIGN KEY (id_funcionario_entrega) REFERENCES Funcionario(id_funcionario),
+    FOREIGN KEY (pedido_id) REFERENCES Pedido(id_pedido),
+    CONSTRAINT CHK_Entrega_Status CHECK (status_entrega IN ('PREPARANDO', 'EM_ROTA', 'ENTREGUE', 'FALHA_ENTREGA'))
+);
+
+CREATE TABLE ItemPedido (
+    id_produto INT NOT NULL,
+    id_pedido INT NOT NULL,
+    quantidade INT NOT NULL,
+    preco DECIMAL(10, 2) NOT NULL,
+    PRIMARY KEY (id_produto, id_pedido),
+    FOREIGN KEY (id_produto) REFERENCES Produto(id_produto),
+    FOREIGN KEY (id_pedido) REFERENCES Pedido(id_pedido)
+);
+
+CREATE TABLE Producao (
+    id_producao INT NOT NULL,
+    id_produto_fabricado INT NOT NULL,
+    id_funcionario INT,
+    quantidade_planejada INT NOT NULL,
+    quantidade_real INT,
+    status TipoProducaoStatus NOT NULL,
+    PRIMARY KEY (id_producao),
+    FOREIGN KEY (id_produto_fabricado) REFERENCES Produto(id_produto),
+    FOREIGN KEY (id_funcionario) REFERENCES Funcionario(id_funcionario),
+    CONSTRAINT CHK_Producao_Status CHECK (status IN ('FEITO', 'FAZENDO', 'PARADO'))
+);
+
+CREATE TABLE ItemInsumo (
+    id_insumo INT NOT NULL,
+    id_producao INT NOT NULL,
+    quantidade INT NOT NULL,
+    PRIMARY KEY (id_insumo, id_producao),
+    FOREIGN KEY (id_insumo) REFERENCES Insumo(id_insumo),
+    FOREIGN KEY (id_producao) REFERENCES Producao(id_producao)
+);
