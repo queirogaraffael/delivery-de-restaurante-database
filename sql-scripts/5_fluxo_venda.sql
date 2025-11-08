@@ -18,9 +18,9 @@ BEGIN
     
     UPDATE Pagamento SET status = 'APROVADO' WHERE id_pagamento = pagamento_id;
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 100, 'SAIDA', 1, CURRENT_DATE, 'Venda Pedido ID ' || pedido_id);
+    (auditoria_seq, 100, 'SAIDA', 1, NOW(), 'Venda Pedido ID ' || pedido_id);
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq + 1, 101, 'SAIDA', 1, CURRENT_DATE, 'Venda Pedido ID ' || pedido_id);
+    (auditoria_seq + 1, 101, 'SAIDA', 1, NOW(), 'Venda Pedido ID ' || pedido_id);
     
     UPDATE Pedido SET status_pedido = 'CONCLUIDO', data_pagamento = CURRENT_TIMESTAMP - interval '1.5 hours' WHERE id_pedido = pedido_id;
     INSERT INTO Entrega (id_entrega, id_funcionario_entrega, pedido_id, previsao_entrega, status_entrega, observacoes_entrega) VALUES
@@ -47,7 +47,7 @@ BEGIN
     
     UPDATE Pagamento SET status = 'APROVADO' WHERE id_pagamento = pagamento_id;
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 106, 'SAIDA', 1, CURRENT_DATE, 'Venda Pedido ID ' || pedido_id);
+    (auditoria_seq, 106, 'SAIDA', 1, NOW(), 'Venda Pedido ID ' || pedido_id);
     
     UPDATE Pedido SET status_pedido = 'CONCLUIDO', data_pagamento = CURRENT_TIMESTAMP - interval '30 minutes' WHERE id_pedido = pedido_id;
     INSERT INTO Entrega (id_entrega, id_funcionario_entrega, pedido_id, previsao_entrega, status_entrega, observacoes_entrega) VALUES
@@ -74,9 +74,9 @@ BEGIN
     
     UPDATE Pagamento SET status = 'APROVADO' WHERE id_pagamento = pagamento_id;
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 102, 'SAIDA', 1, CURRENT_DATE, 'Venda Pedido ID ' || pedido_id);
+    (auditoria_seq, 102, 'SAIDA', 1, NOW(), 'Venda Pedido ID ' || pedido_id);
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq + 1, 103, 'SAIDA', 1, CURRENT_DATE, 'Venda Pedido ID ' || pedido_id);
+    (auditoria_seq + 1, 103, 'SAIDA', 1, NOW(), 'Venda Pedido ID ' || pedido_id);
     
     UPDATE Pedido SET status_pedido = 'EM_PROCESSAMENTO', data_pagamento = CURRENT_TIMESTAMP WHERE id_pedido = pedido_id;
     INSERT INTO Entrega (id_entrega, id_funcionario_entrega, pedido_id, previsao_entrega, status_entrega) VALUES
@@ -123,7 +123,7 @@ BEGIN
     
     UPDATE Pagamento SET status = 'APROVADO' WHERE id_pagamento = pagamento_id;
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq + 1, 108, 'SAIDA', 1, CURRENT_DATE, 'Venda Pedido ID ' || pedido_id);
+    (auditoria_seq + 1, 108, 'SAIDA', 1, NOW(), 'Venda Pedido ID ' || pedido_id);
     
     UPDATE Pedido SET status_pedido = 'PAGO', data_pagamento = CURRENT_TIMESTAMP WHERE id_pedido = pedido_id;
     INSERT INTO Entrega (id_entrega, id_funcionario_entrega, pedido_id, previsao_entrega, status_entrega) VALUES
@@ -150,9 +150,9 @@ BEGIN
     
     UPDATE Pagamento SET status = 'APROVADO' WHERE id_pagamento = pagamento_id;
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq + 1, 100, 'SAIDA', 2, CURRENT_DATE, 'Venda Pedido ID ' || pedido_id);
+    (auditoria_seq + 1, 100, 'SAIDA', 2, NOW(), 'Venda Pedido ID ' || pedido_id);
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq + 2, 101, 'SAIDA', 2, CURRENT_DATE, 'Venda Pedido ID ' || pedido_id);
+    (auditoria_seq + 2, 101, 'SAIDA', 2, NOW(), 'Venda Pedido ID ' || pedido_id);
     
     UPDATE Pedido SET status_pedido = 'PAGO', data_pagamento = CURRENT_TIMESTAMP WHERE id_pedido = pedido_id;
     INSERT INTO Entrega (id_entrega, id_funcionario_entrega, pedido_id, previsao_entrega, status_entrega) VALUES
@@ -179,7 +179,7 @@ BEGIN
     
     UPDATE Pagamento SET status = 'APROVADO' WHERE id_pagamento = pagamento_id;
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq + 1, 100, 'SAIDA', 1, CURRENT_DATE, 'Venda Pedido ID ' || pedido_id);
+    (auditoria_seq + 1, 100, 'SAIDA', 1, NOW(), 'Venda Pedido ID ' || pedido_id);
     
     UPDATE Pedido SET status_pedido = 'PAGO', data_pagamento = CURRENT_TIMESTAMP WHERE id_pedido = pedido_id;
     INSERT INTO Entrega (id_entrega, id_funcionario_entrega, pedido_id, previsao_entrega, status_entrega) VALUES
@@ -206,9 +206,9 @@ BEGIN
     
     UPDATE Pagamento SET status = 'APROVADO' WHERE id_pagamento = pagamento_id;
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq + 1, 106, 'SAIDA', 1, CURRENT_DATE, 'Venda Pedido ID ' || pedido_id);
+    (auditoria_seq + 1, 106, 'SAIDA', 1, NOW(), 'Venda Pedido ID ' || pedido_id);
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq + 2, 105, 'SAIDA', 1, CURRENT_DATE, 'Venda Pedido ID ' || pedido_id);
+    (auditoria_seq + 2, 105, 'SAIDA', 1, NOW(), 'Venda Pedido ID ' || pedido_id);
     
     UPDATE Pedido SET status_pedido = 'PAGO', data_pagamento = CURRENT_TIMESTAMP WHERE id_pedido = pedido_id;
     INSERT INTO Entrega (id_entrega, id_funcionario_entrega, pedido_id, previsao_entrega, status_entrega) VALUES
@@ -257,7 +257,7 @@ BEGIN
     
     UPDATE Pagamento SET status = 'APROVADO' WHERE id_pagamento = pagamento_id;
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq + 1, 102, 'SAIDA', 1, CURRENT_DATE, 'Venda Pedido ID ' || pedido_id);
+    (auditoria_seq + 1, 102, 'SAIDA', 1, NOW(), 'Venda Pedido ID ' || pedido_id);
     
     UPDATE Pedido SET status_pedido = 'EM_PROCESSAMENTO', data_pagamento = CURRENT_TIMESTAMP WHERE id_pedido = pedido_id;
     INSERT INTO Entrega (id_entrega, id_funcionario_entrega, pedido_id, previsao_entrega, status_entrega) VALUES

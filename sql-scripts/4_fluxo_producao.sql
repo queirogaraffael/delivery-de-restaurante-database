@@ -17,12 +17,12 @@ BEGIN
     (14, producao_id, ROUND(quantidade_a_produzir * 0.1));
 
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 10, 'SAIDA', ROUND(50), CURRENT_DATE, 'Consumo Prod. X-Salada 10'),
-    (auditoria_seq + 1, 11, 'SAIDA', ROUND(10), CURRENT_DATE, 'Consumo Prod. X-Salada 10'),
-    (auditoria_seq + 2, 12, 'SAIDA', ROUND(5), CURRENT_DATE, 'Consumo Prod. X-Salada 10'),
-    (auditoria_seq + 3, 13, 'SAIDA', ROUND(5), CURRENT_DATE, 'Consumo Prod. X-Salada 10'),
-    (auditoria_seq + 4, 14, 'SAIDA', ROUND(5), CURRENT_DATE, 'Consumo Prod. X-Salada 10'),
-    (auditoria_seq + 5, 100, 'ENTRADA', quantidade_a_produzir, CURRENT_DATE, 'Producao concluida X-Salada 10');
+    (auditoria_seq, 10, 'SAIDA', ROUND(50), NOW(), 'Consumo Prod. X-Salada 10'),
+    (auditoria_seq + 1, 11, 'SAIDA', ROUND(10), NOW(), 'Consumo Prod. X-Salada 10'),
+    (auditoria_seq + 2, 12, 'SAIDA', ROUND(5), NOW(), 'Consumo Prod. X-Salada 10'),
+    (auditoria_seq + 3, 13, 'SAIDA', ROUND(5), NOW(), 'Consumo Prod. X-Salada 10'),
+    (auditoria_seq + 4, 14, 'SAIDA', ROUND(5), NOW(), 'Consumo Prod. X-Salada 10'),
+    (auditoria_seq + 5, 100, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida X-Salada 10');
 END $$ LANGUAGE plpgsql;
 
 DO $$
@@ -42,10 +42,10 @@ BEGIN
     (11, producao_id, ROUND(quantidade_a_produzir * 0.18));
 
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 10, 'SAIDA', ROUND(40), CURRENT_DATE, 'Consumo Prod. X-Bacon 11'),
-    (auditoria_seq + 1, 12, 'SAIDA', ROUND(6), CURRENT_DATE, 'Consumo Prod. X-Bacon 11'),
-    (auditoria_seq + 2, 11, 'SAIDA', ROUND(7.2), CURRENT_DATE, 'Consumo Prod. X-Bacon 11'),
-    (auditoria_seq + 3, 102, 'ENTRADA', quantidade_a_produzir, CURRENT_DATE, 'Producao concluida X-Bacon 11');
+    (auditoria_seq, 10, 'SAIDA', ROUND(40), NOW(), 'Consumo Prod. X-Bacon 11'),
+    (auditoria_seq + 1, 12, 'SAIDA', ROUND(6), NOW(), 'Consumo Prod. X-Bacon 11'),
+    (auditoria_seq + 2, 11, 'SAIDA', ROUND(7.2), NOW(), 'Consumo Prod. X-Bacon 11'),
+    (auditoria_seq + 3, 102, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida X-Bacon 11');
 END $$ LANGUAGE plpgsql;
 
 DO $$
@@ -65,10 +65,10 @@ BEGIN
     (15, producao_id, ROUND(quantidade_a_produzir * 0.1));
 
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 18, 'SAIDA', ROUND(9), CURRENT_DATE, 'Consumo Prod. Marmita 12'),
-    (auditoria_seq + 1, 19, 'SAIDA', ROUND(1.5), CURRENT_DATE, 'Consumo Prod. Marmita 12'),
-    (auditoria_seq + 2, 15, 'SAIDA', ROUND(3), CURRENT_DATE, 'Consumo Prod. Marmita 12'),
-    (auditoria_seq + 3, 106, 'ENTRADA', quantidade_a_produzir, CURRENT_DATE, 'Producao concluida Marmita 12');
+    (auditoria_seq, 18, 'SAIDA', ROUND(9), NOW(), 'Consumo Prod. Marmita 12'),
+    (auditoria_seq + 1, 19, 'SAIDA', ROUND(1.5), NOW(), 'Consumo Prod. Marmita 12'),
+    (auditoria_seq + 2, 15, 'SAIDA', ROUND(3), NOW(), 'Consumo Prod. Marmita 12'),
+    (auditoria_seq + 3, 106, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida Marmita 12');
 END $$ LANGUAGE plpgsql;
 
 DO $$
@@ -87,9 +87,9 @@ BEGIN
     (14, producao_id, ROUND(quantidade_a_produzir * 0.15));
 
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 13, 'SAIDA', ROUND(4), CURRENT_DATE, 'Consumo Prod. Salada 13'),
-    (auditoria_seq + 1, 14, 'SAIDA', ROUND(3), CURRENT_DATE, 'Consumo Prod. Salada 13'),
-    (auditoria_seq + 2, 107, 'ENTRADA', quantidade_a_produzir, CURRENT_DATE, 'Producao concluida Salada 13');
+    (auditoria_seq, 13, 'SAIDA', ROUND(4), NOW(), 'Consumo Prod. Salada 13'),
+    (auditoria_seq + 1, 14, 'SAIDA', ROUND(3), NOW(), 'Consumo Prod. Salada 13'),
+    (auditoria_seq + 2, 107, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida Salada 13');
 END $$ LANGUAGE plpgsql;
 
 DO $$
@@ -108,9 +108,9 @@ BEGIN
     (19, producao_id, ROUND(quantidade_a_produzir * 0.05));
 
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 10, 'SAIDA', ROUND(15), CURRENT_DATE, 'Consumo Prod. Burger Vegano 14'),
-    (auditoria_seq + 1, 19, 'SAIDA', ROUND(0.75), CURRENT_DATE, 'Consumo Prod. Burger Vegano 14'),
-    (auditoria_seq + 2, 108, 'ENTRADA', quantidade_a_produzir, CURRENT_DATE, 'Producao concluida Burger Vegano 14');
+    (auditoria_seq, 10, 'SAIDA', ROUND(15), NOW(), 'Consumo Prod. Burger Vegano 14'),
+    (auditoria_seq + 1, 19, 'SAIDA', ROUND(0.75), NOW(), 'Consumo Prod. Burger Vegano 14'),
+    (auditoria_seq + 2, 108, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida Burger Vegano 14');
 END $$ LANGUAGE plpgsql;
 
 DO $$
@@ -128,8 +128,8 @@ BEGIN
     (15, producao_id, ROUND(quantidade_a_produzir * 0.05));
 
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 15, 'SAIDA', ROUND(5), CURRENT_DATE, 'Consumo Prod. Batata Frita 15'),
-    (auditoria_seq + 1, 103, 'ENTRADA', quantidade_a_produzir, CURRENT_DATE, 'Producao concluida Batata Frita 15');
+    (auditoria_seq, 15, 'SAIDA', ROUND(5), NOW(), 'Consumo Prod. Batata Frita 15'),
+    (auditoria_seq + 1, 103, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida Batata Frita 15');
 END $$ LANGUAGE plpgsql;
 
 DO $$
@@ -148,9 +148,9 @@ BEGIN
     (11, producao_id, ROUND(quantidade_a_produzir * 0.2));
 
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 10, 'SAIDA', ROUND(25), CURRENT_DATE, 'Consumo Prod. X-Salada 16'),
-    (auditoria_seq + 1, 11, 'SAIDA', ROUND(5), CURRENT_DATE, 'Consumo Prod. X-Salada 16'),
-    (auditoria_seq + 2, 100, 'ENTRADA', quantidade_a_produzir, CURRENT_DATE, 'Producao concluida X-Salada 16');
+    (auditoria_seq, 10, 'SAIDA', ROUND(25), NOW(), 'Consumo Prod. X-Salada 16'),
+    (auditoria_seq + 1, 11, 'SAIDA', ROUND(5), NOW(), 'Consumo Prod. X-Salada 16'),
+    (auditoria_seq + 2, 100, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida X-Salada 16');
 END $$ LANGUAGE plpgsql;
 
 DO $$
@@ -168,8 +168,8 @@ BEGIN
     (18, producao_id, ROUND(quantidade_a_produzir * 0.3));
 
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 18, 'SAIDA', ROUND(3), CURRENT_DATE, 'Consumo Prod. Marmita 17'),
-    (auditoria_seq + 1, 106, 'ENTRADA', quantidade_a_produzir, CURRENT_DATE, 'Producao concluida Marmita 17');
+    (auditoria_seq, 18, 'SAIDA', ROUND(3), NOW(), 'Consumo Prod. Marmita 17'),
+    (auditoria_seq + 1, 106, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida Marmita 17');
 END $$ LANGUAGE plpgsql;
 
 DO $$
@@ -187,8 +187,8 @@ BEGIN
     (13, producao_id, ROUND(quantidade_a_produzir * 0.2));
 
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 13, 'SAIDA', ROUND(3), CURRENT_DATE, 'Consumo Prod. Salada 18'),
-    (auditoria_seq + 1, 107, 'ENTRADA', quantidade_a_produzir, CURRENT_DATE, 'Producao concluida Salada 18');
+    (auditoria_seq, 13, 'SAIDA', ROUND(3), NOW(), 'Consumo Prod. Salada 18'),
+    (auditoria_seq + 1, 107, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida Salada 18');
 END $$ LANGUAGE plpgsql;
 
 DO $$
@@ -207,7 +207,7 @@ BEGIN
     (12, producao_id, ROUND(quantidade_a_produzir * 0.15));
 
     INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 10, 'SAIDA', ROUND(30), CURRENT_DATE, 'Consumo Prod. X-Bacon 19'),
-    (auditoria_seq + 1, 12, 'SAIDA', ROUND(4.5), CURRENT_DATE, 'Consumo Prod. X-Bacon 19'),
-    (auditoria_seq + 2, 102, 'ENTRADA', quantidade_a_produzir, CURRENT_DATE, 'Producao concluida X-Bacon 19');
+    (auditoria_seq, 10, 'SAIDA', ROUND(30), NOW(), 'Consumo Prod. X-Bacon 19'),
+    (auditoria_seq + 1, 12, 'SAIDA', ROUND(4.5), NOW(), 'Consumo Prod. X-Bacon 19'),
+    (auditoria_seq + 2, 102, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida X-Bacon 19');
 END $$ LANGUAGE plpgsql;
