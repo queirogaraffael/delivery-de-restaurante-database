@@ -1,213 +1,250 @@
-DO $$
+CREATE TYPE InsumoProducao AS (
+    id_insumo INT,
+    quantidade_por_unidade DECIMAL(10, 4) 
+);
+
+-- Procedure de produção de produtos
+CREATE OR REPLACE PROCEDURE prc_processar_producao_dinamica()
+    p_id_produto_fabricado INT,
+    p_id_funcionario INT,
+    p_quantidade_planejada INT,
+    p_quantidade_real INT, 
+    p_lista_insumos InsumoProducao[]
+)
+LANGUAGE plpgsql
+AS $$
 DECLARE
-    producao_id INT := 10;
-    produto_fabricado_id INT := 100;
-    funcionario_id INT := 3;
-    quantidade_a_produzir INT := 50;
-    auditoria_seq INT := 14;
+    v_id_producao INT;
+    v_motivo_entrada TEXT;
+    
+    v_registro_insumo InsumoProducao; 
+    
+    v_quantidade_consumida DECIMAL(10, 4);
+    v_quantidade_consumida_int INT;
+    
+    v_estoque_atual INT;
+    v_nome_insumo VARCHAR(255);
+    v_nome_produto VARCHAR(100);
 BEGIN
-    INSERT INTO Producao (id_producao, id_produto_fabricado, id_funcionario, quantidade_planejada, quantidade_real, status) VALUES
-    (producao_id, produto_fabricado_id, funcionario_id, quantidade_a_produzir, quantidade_a_produzir, 'FEITO');
+    SELECT nome INTO v_nome_produto FROM Produto WHERE id_produto = p_id_produto_fabricado;
 
-    INSERT INTO ItemInsumo (id_insumo, id_producao, quantidade) VALUES
-    (10, producao_id, ROUND(quantidade_a_produzir * 1)),
-    (11, producao_id, ROUND(quantidade_a_produzir * 0.2)),
-    (12, producao_id, ROUND(quantidade_a_produzir * 0.1)),
-    (13, producao_id, ROUND(quantidade_a_produzir * 0.1)),
-    (14, producao_id, ROUND(quantidade_a_produzir * 0.1));
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Produto com ID % não encontrado.', p_id_produto_fabricado;
+    END IF;
 
-    INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 10, 'SAIDA', ROUND(50), NOW(), 'Consumo Prod. X-Salada 10'),
-    (auditoria_seq + 1, 11, 'SAIDA', ROUND(10), NOW(), 'Consumo Prod. X-Salada 10'),
-    (auditoria_seq + 2, 12, 'SAIDA', ROUND(5), NOW(), 'Consumo Prod. X-Salada 10'),
-    (auditoria_seq + 3, 13, 'SAIDA', ROUND(5), NOW(), 'Consumo Prod. X-Salada 10'),
-    (auditoria_seq + 4, 14, 'SAIDA', ROUND(5), NOW(), 'Consumo Prod. X-Salada 10'),
-    (auditoria_seq + 5, 100, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida X-Salada 10');
-END $$ LANGUAGE plpgsql;
+    FOREACH v_registro_insumo IN ARRAY p_lista_insumos
+    LOOP
+        v_quantidade_consumida := p_quantidade_real * v_registro_insumo.quantidade_por_unidade;
+        
+        IF v_quantidade_consumida > 0 THEN
+             v_quantidade_consumida_int := CEIL(v_quantidade_consumida);
+        ELSE
+             v_quantidade_consumida_int := 0;
+        END IF;
 
-DO $$
-DECLARE
-    producao_id INT := 11;
-    produto_fabricado_id INT := 102;
-    funcionario_id INT := 7;
-    quantidade_a_produzir INT := 40;
-    auditoria_seq INT := 20;
-BEGIN
-    INSERT INTO Producao (id_producao, id_produto_fabricado, id_funcionario, quantidade_planejada, quantidade_real, status) VALUES
-    (producao_id, produto_fabricado_id, funcionario_id, quantidade_a_produzir, quantidade_a_produzir, 'FEITO');
+        IF v_quantidade_consumida_int = 0 THEN
+            CONTINUE; 
+        END IF;
+        
+        SELECT estoque_atual, nome INTO v_estoque_atual, v_nome_insumo 
+        FROM Insumo 
+        WHERE id_insumo = v_registro_insumo.id_insumo;
+        
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'Insumo com ID % não encontrado. Produção cancelada.', v_registro_insumo.id_insumo;
+        END IF;
 
-    INSERT INTO ItemInsumo (id_insumo, id_producao, quantidade) VALUES
-    (10, producao_id, ROUND(quantidade_a_produzir * 1)),
-    (12, producao_id, ROUND(quantidade_a_produzir * 0.15)),
-    (11, producao_id, ROUND(quantidade_a_produzir * 0.18));
+        IF v_estoque_atual < v_quantidade_consumida_int THEN
+            RAISE EXCEPTION 'ESTOQUE INSUFICIENTE: O insumo "%" (ID %) requer % unidades, mas o estoque atual é de % unidades. Produção cancelada.', 
+            v_nome_insumo, v_registro_insumo.id_insumo, v_quantidade_consumida_int, v_estoque_atual;
+        END IF;
+        
+    END LOOP;
+    
+    INSERT INTO Producao (id_produto_fabricado, id_funcionario, quantidade_planejada, quantidade_real, status_producao)
+    VALUES (p_id_produto_fabricado, p_id_funcionario, p_quantidade_planejada, p_quantidade_real, 'FEITO')
+    RETURNING id_producao INTO v_id_producao;
 
-    INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 10, 'SAIDA', ROUND(40), NOW(), 'Consumo Prod. X-Bacon 11'),
-    (auditoria_seq + 1, 12, 'SAIDA', ROUND(6), NOW(), 'Consumo Prod. X-Bacon 11'),
-    (auditoria_seq + 2, 11, 'SAIDA', ROUND(7.2), NOW(), 'Consumo Prod. X-Bacon 11'),
-    (auditoria_seq + 3, 102, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida X-Bacon 11');
-END $$ LANGUAGE plpgsql;
+    FOREACH v_registro_insumo IN ARRAY p_lista_insumos
+    LOOP
+        v_quantidade_consumida := p_quantidade_real * v_registro_insumo.quantidade_por_unidade;
+        
+        IF v_quantidade_consumida > 0 THEN
+             v_quantidade_consumida_int := CEIL(v_quantidade_consumida);
+        ELSE
+             v_quantidade_consumida_int := 0;
+        END IF;
 
-DO $$
-DECLARE
-    producao_id INT := 12;
-    produto_fabricado_id INT := 106;
-    funcionario_id INT := 3;
-    quantidade_a_produzir INT := 30;
-    auditoria_seq INT := 24;
-BEGIN
-    INSERT INTO Producao (id_producao, id_produto_fabricado, id_funcionario, quantidade_planejada, quantidade_real, status) VALUES
-    (producao_id, produto_fabricado_id, funcionario_id, quantidade_a_produzir, quantidade_a_produzir, 'FEITO');
+        IF v_quantidade_consumida_int = 0 THEN
+            CONTINUE; 
+        END IF;
+        
+        INSERT INTO ItemInsumo (id_insumo, id_producao, quantidade) 
+        VALUES (v_registro_insumo.id_insumo, v_id_producao, v_quantidade_consumida_int);
 
-    INSERT INTO ItemInsumo (id_insumo, id_producao, quantidade) VALUES
-    (18, producao_id, ROUND(quantidade_a_produzir * 0.3)),
-    (19, producao_id, ROUND(quantidade_a_produzir * 0.05)),
-    (15, producao_id, ROUND(quantidade_a_produzir * 0.1));
+        UPDATE Insumo SET estoque_atual = estoque_atual - v_quantidade_consumida_int
+        WHERE id_insumo = v_registro_insumo.id_insumo;
 
-    INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 18, 'SAIDA', ROUND(9), NOW(), 'Consumo Prod. Marmita 12'),
-    (auditoria_seq + 1, 19, 'SAIDA', ROUND(1.5), NOW(), 'Consumo Prod. Marmita 12'),
-    (auditoria_seq + 2, 15, 'SAIDA', ROUND(3), NOW(), 'Consumo Prod. Marmita 12'),
-    (auditoria_seq + 3, 106, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida Marmita 12');
-END $$ LANGUAGE plpgsql;
+    END LOOP;
 
-DO $$
-DECLARE
-    producao_id INT := 13;
-    produto_fabricado_id INT := 107;
-    funcionario_id INT := 7;
-    quantidade_a_produzir INT := 20;
-    auditoria_seq INT := 28;
-BEGIN
-    INSERT INTO Producao (id_producao, id_produto_fabricado, id_funcionario, quantidade_planejada, quantidade_real, status) VALUES
-    (producao_id, produto_fabricado_id, funcionario_id, quantidade_a_produzir, quantidade_a_produzir, 'FEITO');
+    v_motivo_entrada := 'Produção concluída de ' || v_nome_produto || ' (ID Prod: ' || v_id_producao || ')';
 
-    INSERT INTO ItemInsumo (id_insumo, id_producao, quantidade) VALUES
-    (13, producao_id, ROUND(quantidade_a_produzir * 0.2)),
-    (14, producao_id, ROUND(quantidade_a_produzir * 0.15));
+    UPDATE Produto SET estoque_atual = estoque_atual + p_quantidade_real
+    WHERE id_produto = p_id_produto_fabricado;
 
-    INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 13, 'SAIDA', ROUND(4), NOW(), 'Consumo Prod. Salada 13'),
-    (auditoria_seq + 1, 14, 'SAIDA', ROUND(3), NOW(), 'Consumo Prod. Salada 13'),
-    (auditoria_seq + 2, 107, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida Salada 13');
-END $$ LANGUAGE plpgsql;
+    INSERT INTO AuditoriaEstoqueProduto (id_produto, tipo_movimento, quantidade, data, motivo)
+    VALUES (p_id_produto_fabricado, 'ENTRADA', p_quantidade_real, NOW(), v_motivo_entrada);
 
-DO $$
-DECLARE
-    producao_id INT := 14;
-    produto_fabricado_id INT := 108;
-    funcionario_id INT := 3;
-    quantidade_a_produzir INT := 15;
-    auditoria_seq INT := 31;
-BEGIN
-    INSERT INTO Producao (id_producao, id_produto_fabricado, id_funcionario, quantidade_planejada, quantidade_real, status) VALUES
-    (producao_id, produto_fabricado_id, funcionario_id, quantidade_a_produzir, quantidade_a_produzir, 'FEITO');
+END $$;
 
-    INSERT INTO ItemInsumo (id_insumo, id_producao, quantidade) VALUES
-    (10, producao_id, ROUND(quantidade_a_produzir * 1)),
-    (19, producao_id, ROUND(quantidade_a_produzir * 0.05));
+-- Processo de Produção de X-Salada Gourmet
+-- Ingredientes:
+    -- Pão de Hambúrguer
+    -- Queijo Muçarela (0.001kg)
+    -- Alface Americana (0.1UN)
+CALL prc_processar_producao_dinamica(
+    p_id_produto_fabricado := 100,
+    p_id_funcionario := 3,
+    p_quantidade_planejada := 50,
+    p_quantidade_real := 50,
+    p_lista_insumos := ARRAY[
+    (10, 1.0),
+    (11, 0.2),
+    (12, 0.001),
+    (13, 0.1)
+    ]::InsumoProducao[]
+);
 
-    INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 10, 'SAIDA', ROUND(15), NOW(), 'Consumo Prod. Burger Vegano 14'),
-    (auditoria_seq + 1, 19, 'SAIDA', ROUND(0.75), NOW(), 'Consumo Prod. Burger Vegano 14'),
-    (auditoria_seq + 2, 108, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida Burger Vegano 14');
-END $$ LANGUAGE plpgsql;
+-- Processo de Produção de X-Bacon Simples
+-- Ingredientes:
+    -- Pão de Hambúrguer
+    -- Queijo Muçarela (0.15kg)
+    -- Carne Moída (0.18kg)
+    -- Bacon (0.1kg)
+CALL prc_processar_producao_dinamica(
+    p_id_produto_fabricado := 102,
+    p_id_funcionario := 7,
+    p_quantidade_planejada := 40, 
+    p_quantidade_real := 40,
+    p_lista_insumos := ARRAY[
+        (10, 1.0),
+        (12, 0.15),
+        (11, 0.18),
+        (22, 0.1)
+    ]::InsumoProducao[]
+);
 
-DO $$
-DECLARE
-    producao_id INT := 15;
-    produto_fabricado_id INT := 103;
-    funcionario_id INT := 7;
-    quantidade_a_produzir INT := 100;
-    auditoria_seq INT := 34;
-BEGIN
-    INSERT INTO Producao (id_producao, id_produto_fabricado, id_funcionario, quantidade_planejada, quantidade_real, status) VALUES
-    (producao_id, produto_fabricado_id, funcionario_id, quantidade_a_produzir, quantidade_a_produzir, 'FEITO');
+-- Processo de Produção de Marmita Frango Grelhado
+-- Ingredientes:
+    -- Frango (0.3kg)
+    -- Cebola (0.05kg)
+    -- Óleo Vegetal (0.1L)
+    -- Feijão (0.15kg)
+    -- Arroz (0.2kg)
+CALL prc_processar_producao_dinamica(
+    p_id_produto_fabricado := 106,
+    p_id_funcionario := 3,
+    p_quantidade_planejada := 30, 
+    p_quantidade_real := 30,
+    p_lista_insumos := ARRAY[
+        (18, 0.3),
+        (19, 0.05),
+        (15, 0.1),
+        (23, 0.15),
+        (24, 0.2)
+    ]::InsumoProducao[]
+);
 
-    INSERT INTO ItemInsumo (id_insumo, id_producao, quantidade) VALUES
-    (15, producao_id, ROUND(quantidade_a_produzir * 0.05));
+-- Processo de Produção de Salada Caesar -- ERRO Intencional: vai apresentar erro por falta de Alface
+-- Ingredientes:
+    -- Alface Americana (0.2UN)
+    -- Tomate (0.15kg)
+    -- Molho Caesar (0.1L)
+CALL prc_processar_producao_dinamica(
+    p_id_produto_fabricado := 107,
+    p_id_funcionario := 7,
+    p_quantidade_planejada := 20, 
+    p_quantidade_real := 20,
+    p_lista_insumos := ARRAY[
+        (13, 0.2),
+        (14, 0.15),
+        (25, 0.1)
+    ]::InsumoProducao[]
+);
 
-    INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 15, 'SAIDA', ROUND(5), NOW(), 'Consumo Prod. Batata Frita 15'),
-    (auditoria_seq + 1, 103, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida Batata Frita 15');
-END $$ LANGUAGE plpgsql;
+-- Processo de Produção de Burger Vegano
+-- Ingredientes:
+    -- Pão de Hambúrguer
+    -- Cebola (0.05kg)
+CALL prc_processar_producao_dinamica(
+    p_id_produto_fabricado := 108,
+    p_id_funcionario := 3,
+    p_quantidade_planejada := 15, 
+    p_quantidade_real := 15,
+    p_lista_insumos := ARRAY[
+    (10, 1.0),
+    (19, 0.05)
+    ]::InsumoProducao[]
+);
 
-DO $$
-DECLARE
-    producao_id INT := 16;
-    produto_fabricado_id INT := 100;
-    funcionario_id INT := 3;
-    quantidade_a_produzir INT := 25;
-    auditoria_seq INT := 36;
-BEGIN
-    INSERT INTO Producao (id_producao, id_produto_fabricado, id_funcionario, quantidade_planejada, quantidade_real, status) VALUES
-    (producao_id, produto_fabricado_id, funcionario_id, quantidade_a_produzir, quantidade_a_produzir, 'FEITO');
+-- Processo de produção de Batata Frita Média
+-- Ingredientes:
+    -- Óleo Vegetal (0.05L)
+    -- Batata Inglesa (0.25kg)
+CALL prc_processar_producao_dinamica(
+    p_id_produto_fabricado := 103,
+    p_id_funcionario := 7,
+    p_quantidade_planejada := 100, 
+    p_quantidade_real := 100,
+    p_lista_insumos := ARRAY[
+        (15, 0.05),
+        (21, 0.25)
+    ]::InsumoProducao[]
+);
 
-    INSERT INTO ItemInsumo (id_insumo, id_producao, quantidade) VALUES
-    (10, producao_id, ROUND(quantidade_a_produzir * 1)),
-    (11, producao_id, ROUND(quantidade_a_produzir * 0.2));
+-- Processo de produção de Pudim de Leite
+-- Ingredientes:
+    -- Leite Condensado (0.5UN)
+    -- Ovos (2UN)
+    -- Leite (0.1L)
+CALL prc_processar_producao_dinamica(
+    p_id_produto_fabricado := 104,
+    p_id_funcionario := 3,
+    p_quantidade_planejada := 1, 
+    p_quantidade_real := 1,
+    p_lista_insumos := ARRAY[
+        (26, 0.5),
+        (27, 2.0),
+        (28, 0.1)
+    ]::InsumoProducao[]
+);
 
-    INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 10, 'SAIDA', ROUND(25), NOW(), 'Consumo Prod. X-Salada 16'),
-    (auditoria_seq + 1, 11, 'SAIDA', ROUND(5), NOW(), 'Consumo Prod. X-Salada 16'),
-    (auditoria_seq + 2, 100, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida X-Salada 16');
-END $$ LANGUAGE plpgsql;
+-- Processo de produção de Brownie com Sorvete
+-- Ingredientes:
+    -- Sorvete (0.1L)
+    -- Brownie Prémix (0.2kg)
+CALL prc_processar_producao_dinamica(
+    p_id_produto_fabricado := 119,
+    p_id_funcionario := 7,
+    p_quantidade_planejada := 10, 
+    p_quantidade_real := 10,
+    p_lista_insumos := ARRAY[
+        (29, 0.1),
+        (30, 0.2)
+    ]::InsumoProducao[]
+);
 
-DO $$
-DECLARE
-    producao_id INT := 17;
-    produto_fabricado_id INT := 106;
-    funcionario_id INT := 7;
-    quantidade_a_produzir INT := 10;
-    auditoria_seq INT := 39;
-BEGIN
-    INSERT INTO Producao (id_producao, id_produto_fabricado, id_funcionario, quantidade_planejada, quantidade_real, status) VALUES
-    (producao_id, produto_fabricado_id, funcionario_id, quantidade_a_produzir, quantidade_a_produzir, 'FEITO');
-
-    INSERT INTO ItemInsumo (id_insumo, id_producao, quantidade) VALUES
-    (18, producao_id, ROUND(quantidade_a_produzir * 0.3));
-
-    INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 18, 'SAIDA', ROUND(3), NOW(), 'Consumo Prod. Marmita 17'),
-    (auditoria_seq + 1, 106, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida Marmita 17');
-END $$ LANGUAGE plpgsql;
-
-DO $$
-DECLARE
-    producao_id INT := 18;
-    produto_fabricado_id INT := 107;
-    funcionario_id INT := 3;
-    quantidade_a_produzir INT := 15;
-    auditoria_seq INT := 41;
-BEGIN
-    INSERT INTO Producao (id_producao, id_produto_fabricado, id_funcionario, quantidade_planejada, quantidade_real, status) VALUES
-    (producao_id, produto_fabricado_id, funcionario_id, quantidade_a_produzir, quantidade_a_produzir, 'FEITO');
-
-    INSERT INTO ItemInsumo (id_insumo, id_producao, quantidade) VALUES
-    (13, producao_id, ROUND(quantidade_a_produzir * 0.2));
-
-    INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 13, 'SAIDA', ROUND(3), NOW(), 'Consumo Prod. Salada 18'),
-    (auditoria_seq + 1, 107, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida Salada 18');
-END $$ LANGUAGE plpgsql;
-
-DO $$
-DECLARE
-    producao_id INT := 19;
-    produto_fabricado_id INT := 102;
-    funcionario_id INT := 7;
-    quantidade_a_produzir INT := 30;
-    auditoria_seq INT := 43;
-BEGIN
-    INSERT INTO Producao (id_producao, id_produto_fabricado, id_funcionario, quantidade_planejada, quantidade_real, status) VALUES
-    (producao_id, produto_fabricado_id, funcionario_id, quantidade_a_produzir, quantidade_a_produzir, 'FEITO');
-
-    INSERT INTO ItemInsumo (id_insumo, id_producao, quantidade) VALUES
-    (10, producao_id, ROUND(quantidade_a_produzir * 1)),
-    (12, producao_id, ROUND(quantidade_a_produzir * 0.15));
-
-    INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES
-    (auditoria_seq, 10, 'SAIDA', ROUND(30), NOW(), 'Consumo Prod. X-Bacon 19'),
-    (auditoria_seq + 1, 12, 'SAIDA', ROUND(4.5), NOW(), 'Consumo Prod. X-Bacon 19'),
-    (auditoria_seq + 2, 102, 'ENTRADA', quantidade_a_produzir, NOW(), 'Producao concluida X-Bacon 19');
-END $$ LANGUAGE plpgsql;
+-- Processo de produção de Porção de Nuggets
+-- Ingredientes:
+    -- Óleo Vegetal (0.02L)
+    -- Nuggets de Frango (0.3kg)
+CALL prc_processar_producao_dinamica(
+    p_id_produto_fabricado := 124,
+    p_id_funcionario := 3,
+    p_quantidade_planejada := 15, 
+    p_quantidade_real := 15, 
+    p_lista_insumos := ARRAY[
+        (15, 0.02),
+        (31, 0.3)
+    ]::InsumoProducao[]
+);

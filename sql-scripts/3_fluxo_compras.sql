@@ -1,89 +1,217 @@
-CREATE OR REPLACE FUNCTION atualizar_estoque_apos_auditoria()
+-- Trigger que cadastram a entrada de insumos e produtos e fazem a auditoria de produtos
+
+CREATE OR REPLACE FUNCTION fn_entrada_produto_nf()
 RETURNS TRIGGER AS $$
 DECLARE
-    tipo_item VARCHAR(10);
+    v_existe INT;
 BEGIN
-    IF NEW.id_produto < 100 THEN
-        tipo_item := 'Insumo';
-    ELSE
-        tipo_item := 'Produto';
+    SELECT 1 INTO v_existe
+    FROM Produto
+    WHERE id_produto = NEW.id_produto;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 
+            'Erro ao registrar entrada por NF: Produto com ID % não existe.',
+            NEW.id_produto;
     END IF;
 
-    IF NEW.tipo = 'ENTRADA' THEN
-        IF tipo_item = 'Produto' THEN
-            UPDATE Produto SET estoque_atual = estoque_atual + NEW.quantidade WHERE id_produto = NEW.id_produto;
-        ELSE
-            UPDATE Insumo SET estoque_atual = estoque_atual + NEW.quantidade WHERE id_insumo = NEW.id_produto;
-        END IF;
-    ELSIF NEW.tipo = 'SAIDA' THEN
-        IF tipo_item = 'Produto' THEN
-            UPDATE Produto SET estoque_atual = estoque_atual - NEW.quantidade WHERE id_produto = NEW.id_produto;
-        ELSE
-            UPDATE Insumo SET estoque_atual = estoque_atual - NEW.quantidade WHERE id_insumo = NEW.id_produto;
-        END IF;
+    IF NEW.quantidade_produto IS NULL OR NEW.quantidade_produto <= 0 THEN
+        RAISE EXCEPTION 
+            'Erro ao registrar entrada por NF: quantidade inválida (%).',
+            NEW.quantidade_produto;
     END IF;
+
+    UPDATE Produto
+    SET estoque_atual = COALESCE(estoque_atual, 0) + NEW.quantidade_produto
+    WHERE id_produto = NEW.id_produto;
+
+    INSERT INTO AuditoriaEstoqueProduto (
+        id_produto,
+        tipo_movimento,
+        quantidade,
+        data,
+        motivo
+    ) VALUES (
+        NEW.id_produto,
+        'ENTRADA',
+        NEW.quantidade_produto,
+        CURRENT_TIMESTAMP,
+        'NF ' || NEW.id_nota_fiscal || ': Entrada de Compra'
+    );
 
     RETURN NEW;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE EXCEPTION 
+            'Falha ao processar a entrada de produto da NF (ID Produto %, Quantidade %, Erro: %)',
+            NEW.id_produto,
+            NEW.quantidade_produto,
+            SQLERRM;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_atualizar_estoque
-AFTER INSERT ON AuditoriaEstoqueProduto
-FOR EACH ROW EXECUTE FUNCTION atualizar_estoque_apos_auditoria();
+CREATE OR REPLACE TRIGGER trg_nfproduto_entrada_estoque
+AFTER INSERT ON NotaFiscalProduto
+FOR EACH ROW
+EXECUTE FUNCTION fn_entrada_produto_nf();
 
-INSERT INTO Pagamento (id_pagamento, metodo, status) VALUES
-(200, 'PIX', 'APROVADO'),
-(201, 'PIX', 'PENDENTE'),
-(202, 'CARTAO', 'APROVADO'),
-(203, 'PIX', 'APROVADO'),
-(204, 'PIX', 'PENDENTE'),
-(205, 'CARTAO', 'APROVADO'),
-(206, 'PIX', 'APROVADO'),
-(207, 'PIX', 'PENDENTE'),
-(208, 'CARTAO', 'APROVADO'),
-(209, 'PIX', 'APROVADO');
+---
 
-INSERT INTO NotaFiscal (id_notaFiscal, id_fornecedor, id_pagamento, data_nota, valor_total) VALUES
-(100, 1000, 200, CURRENT_TIMESTAMP, 450.00),
-(101, 1001, 201, CURRENT_TIMESTAMP, 800.00),
-(102, 1002, 202, CURRENT_TIMESTAMP, 300.00),
-(103, 1003, 203, CURRENT_TIMESTAMP, 150.00),
-(104, 1004, 204, CURRENT_TIMESTAMP, 250.00),
-(106, 1006, 206, CURRENT_TIMESTAMP, 320.00),
-(107, 1008, 207, CURRENT_TIMESTAMP, 600.00),
-(108, 1009, 208, CURRENT_TIMESTAMP, 100.00),
-(109, 1002, 209, CURRENT_TIMESTAMP, 400.00);
+CREATE OR REPLACE FUNCTION fn_entrada_insumo_nf()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_existe INT;
+BEGIN
+    SELECT 1 INTO v_existe
+    FROM Insumo
+    WHERE id_insumo = NEW.id_insumo;
 
-INSERT INTO NotaFiscalInsumo (id_notaFiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES (100, 10, 100, 2.50);
-INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES (1, 10, 'ENTRADA', 100, CURRENT_DATE, 'NF 100: Compra de Pão');
-INSERT INTO NotaFiscalInsumo (id_notaFiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES (100, 12, 10, 30.00);
-INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES (2, 12, 'ENTRADA', 10, CURRENT_DATE, 'NF 100: Compra de Queijo');
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 
+            'Erro ao registrar entrada por NF: Insumo com ID % não existe.',
+            NEW.id_insumo;
+    END IF;
 
-INSERT INTO NotaFiscalInsumo (id_notaFiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES (101, 11, 20, 40.00);
-INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES (3, 11, 'ENTRADA', 20, CURRENT_DATE, 'NF 101: Compra de Carne');
+    IF NEW.quantidade_insumo IS NULL OR NEW.quantidade_insumo <= 0 THEN
+        RAISE EXCEPTION 
+            'Erro ao registrar entrada por NF: quantidade inválida (%).',
+            NEW.quantidade_insumo;
+    END IF;
 
-INSERT INTO NotaFiscalProduto (id_notaFiscal, id_produto, quantidade_produto, valor_unitario) VALUES (102, 101, 50, 5.00);
-INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES (4, 101, 'ENTRADA', 50, CURRENT_DATE, 'NF 102: Compra Refri');
-INSERT INTO NotaFiscalProduto (id_notaFiscal, id_produto, quantidade_produto, valor_unitario) VALUES (102, 105, 40, 6.00);
-INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES (5, 105, 'ENTRADA', 40, CURRENT_DATE, 'NF 102: Compra Suco');
+    UPDATE Insumo
+    SET estoque_atual = COALESCE(estoque_atual, 0) + NEW.quantidade_insumo
+    WHERE id_insumo = NEW.id_insumo;
 
-INSERT INTO NotaFiscalInsumo (id_notaFiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES (103, 13, 5, 5.00);
-INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES (6, 13, 'ENTRADA', 5, CURRENT_DATE, 'NF 103: Compra Alface');
-INSERT INTO NotaFiscalInsumo (id_notaFiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES (103, 14, 15, 10.00);
-INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES (7, 14, 'ENTRADA', 15, CURRENT_DATE, 'NF 103: Compra Tomate');
+    RETURN NEW;
 
-INSERT INTO NotaFiscalInsumo (id_notaFiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES (105, 17, 50, 2.00);
-INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES (8, 17, 'ENTRADA', 50, CURRENT_DATE, 'NF 105: Compra Farinha');
-INSERT INTO NotaFiscalInsumo (id_notaFiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES (105, 16, 30, 3.00);
-INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES (9, 16, 'ENTRADA', 30, CURRENT_DATE, 'NF 105: Compra Açúcar');
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE EXCEPTION 
+            'Falha ao processar a entrada de insumo da NF (ID Insumo %, Quantidade %, Erro: %)',
+            NEW.id_insumo,
+            NEW.quantidade_insumo,
+            SQLERRM;
+END;
+$$ LANGUAGE plpgsql;
 
-INSERT INTO NotaFiscalInsumo (id_notaFiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES (107, 18, 10, 60.00);
-INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES (10, 18, 'ENTRADA', 10, CURRENT_DATE, 'NF 107: Compra Frango');
+CREATE OR REPLACE TRIGGER trg_nfinsumo_entrada_estoque
+AFTER INSERT ON NotaFiscalInsumo
+FOR EACH ROW
+EXECUTE FUNCTION fn_entrada_insumo_nf();
 
-INSERT INTO NotaFiscalInsumo (id_notaFiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES (108, 19, 8, 5.00);
-INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES (11, 19, 'ENTRADA', 8, CURRENT_DATE, 'NF 108: Compra Cebola');
+---
 
-INSERT INTO NotaFiscalInsumo (id_notaFiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES (109, 15, 50, 8.00);
-INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES (12, 15, 'ENTRADA', 50, CURRENT_DATE, 'NF 109: Compra Óleo');
-INSERT INTO NotaFiscalProduto (id_notaFiscal, id_produto, quantidade_produto, valor_unitario) VALUES (109, 109, 100, 2.50);
-INSERT INTO AuditoriaEstoqueProduto (id_auditoriaEstoque, id_produto, tipo, quantidade, data, motivo) VALUES (13, 109, 'ENTRADA', 100, CURRENT_DATE, 'NF 109: Compra Água');
+INSERT INTO Pagamento (id_pagamento, metodo_pagamento, status_pagamento, data_pagamento) VALUES
+(200, 'PIX', 'APROVADO', '2025-11-28 10:15:00'),
+(201, 'PIX', 'PENDENTE', NULL),
+(202, 'CARTAO', 'APROVADO', '2025-11-27 14:30:00'),
+(203, 'PIX', 'APROVADO', '2025-11-28 09:50:00'),
+(204, 'PIX', 'PENDENTE', NULL),
+(205, 'CARTAO', 'APROVADO', '2025-11-26 16:05:00'),
+(206, 'PIX', 'APROVADO', '2025-11-28 11:00:00'),
+(207, 'PIX', 'PENDENTE', NULL),
+(208, 'PIX', 'APROVADO', CURRENT_TIMESTAMP),
+(209, 'CARTAO', 'APROVADO', CURRENT_TIMESTAMP),
+(210, 'PIX', 'APROVADO', CURRENT_TIMESTAMP),
+(211, 'PIX', 'APROVADO', CURRENT_TIMESTAMP);
+
+---
+
+INSERT INTO NotaFiscal (id_nota_fiscal, id_fornecedor, id_pagamento, data_nota_fiscal, valor_total) VALUES
+(100, 1000, 200, CURRENT_TIMESTAMP, 550.00), 
+(101, 1001, 201, CURRENT_TIMESTAMP, 800.00), 
+(102, 1002, 202, CURRENT_TIMESTAMP, 490.00), 
+(103, 1003, 203, CURRENT_TIMESTAMP, 425.00), 
+(104, 1004, 204, CURRENT_TIMESTAMP, 190.00), 
+(105, 1008, 205, CURRENT_TIMESTAMP, 600.00),
+(106, 1009, 206, CURRENT_TIMESTAMP, 40.00),
+(107, 1002, 207, CURRENT_TIMESTAMP, 650.00),
+(108, 1000, 208, CURRENT_TIMESTAMP, 300.00),
+(109, 1001, 209, CURRENT_TIMESTAMP, 150.00),
+(110, 1002, 210, CURRENT_TIMESTAMP, 120.00),
+(111, 1003, 211, CURRENT_TIMESTAMP, 80.00);
+
+-- NF 100
+    -- Insumos (Pão, Queijo)
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(100, 10, 100, 2.50);
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(100, 12, 10, 30.00);
+
+-- NF 101
+-- Insumo (Carne)
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(101, 11, 20, 40.00);
+
+-- NF 102
+-- Produtos (Refrigerante, Suco Laranja)
+INSERT INTO NotaFiscalProduto (id_nota_fiscal, id_produto, quantidade_produto, valor_unitario) VALUES 
+(102, 101, 50, 5.00);
+INSERT INTO NotaFiscalProduto (id_nota_fiscal, id_produto, quantidade_produto, valor_unitario) VALUES 
+(102, 105, 40, 6.00);
+
+-- NF 103
+-- Insumos (Alface, Tomate, Batata)
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(103, 13, 5, 5.00);
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(103, 14, 15, 10.00);
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(103, 21, 50, 5.00);
+
+-- NF 104
+-- Insumos (Farinha, Açúcar)
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(104, 17, 50, 2.00);
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(104, 16, 30, 3.00);
+
+-- NF 105
+-- Insumo (Frango)
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(105, 18, 10, 60.00);
+
+-- NF 106
+-- Insumo (Cebola)
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(106, 19, 8, 5.00);
+
+-- NF 107
+-- Insumo (Óleo) e Produto (Água)
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(107, 15, 50, 8.00);
+INSERT INTO NotaFiscalProduto (id_nota_fiscal, id_produto, quantidade_produto, valor_unitario) VALUES 
+(107, 109, 100, 2.50);
+
+-- NF 108
+-- Laticínios/Congelados (Leite, Sorvete, Nuggets)
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(108, 28, 20, 4.00);
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(108, 29, 5, 20.00);
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(108, 31, 10, 10.00);
+
+-- NF 109
+-- Secos (Feijão, Arroz, Brownie Prémix)
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(109, 23, 30, 4.00);
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(109, 24, 50, 3.00);
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(109, 30, 5, 12.00);
+
+-- NF 110
+-- Molhos e Condensados (Molho Caesar, Leite Condensado)
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(110, 25, 10, 10.00);
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(110, 26, 20, 5.00);
+
+-- NF 111
+-- Outros (Bacon, Ovos)
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(111, 22, 10, 20.00);
+INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
+(111, 27, 30, 1.00);
