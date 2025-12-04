@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 
@@ -46,6 +47,18 @@ public class PedidoController {
     public ResponseEntity<Pedido> update(@PathVariable Long id, @RequestBody Pedido pedido){
         pedido = service.update(id, pedido);
         return ResponseEntity.ok().body(pedido);
+    }
+
+    @GetMapping("/{id}/total-db")
+    public ResponseEntity<BigDecimal> getTotalDb(@PathVariable Long id) {
+        BigDecimal total = service.obterTotalDoBanco(id);
+        return ResponseEntity.ok(total);
+    }
+
+    @PutMapping("/{id}/fechar-db")
+    public ResponseEntity<String> fecharPedidoDb(@PathVariable Long id) {
+        service.fecharPedidoNoBanco(id);
+        return ResponseEntity.ok("Sucesso! Procedure executada e pedido fechado.");
     }
 
 }

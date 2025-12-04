@@ -3,9 +3,11 @@ package com.unifacisa.delivery_de_restaurant.Service;
 import com.unifacisa.delivery_de_restaurant.Entity.Pedido;
 import com.unifacisa.delivery_de_restaurant.Repositories.PedidoRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -22,7 +24,12 @@ public class PedidoService {
         return pedidoRepository.findById(id).get();
     }
 
-    public Pedido insert(Pedido pedido){
+    public Pedido insert(Pedido pedido) {
+
+        if (pedido.getItens() != null) {
+            pedido.getItens().forEach(item -> item.setPedido(pedido));
+        }
+
         return pedidoRepository.save(pedido);
     }
 
@@ -44,5 +51,15 @@ public class PedidoService {
         entity.setTaxaEntrega(entity.getTaxaEntrega());
         entity.setStatusPedido(pedido.getStatusPedido());
         entity.setPagamento(pedido.getPagamento());
+    }
+
+    public BigDecimal obterTotalDoBanco(Long idPedido) {
+        return pedidoRepository.calcularTotalViaBanco(idPedido);
+    }
+
+    //Para procedure que alteram dados, isso é obrigatorio
+    @Transactional
+    public void fecharPedidoNoBanco(Long idPedido) {
+        pedidoRepository.fecharPedidoViaProcedure(idPedido);
     }
 }

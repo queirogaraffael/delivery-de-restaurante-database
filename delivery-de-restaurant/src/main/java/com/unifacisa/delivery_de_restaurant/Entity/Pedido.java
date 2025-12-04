@@ -8,6 +8,8 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -53,6 +55,9 @@ public class Pedido implements Serializable {
     @Column(name = "valor_itens", precision = 10, scale = 2)
     private BigDecimal valorItens;
 
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
+    private List<ItemPedido> itens = new ArrayList<>();
+
     public Pedido() {
 
     }
@@ -61,11 +66,11 @@ public class Pedido implements Serializable {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Pedido pedido = (Pedido) o;
-        return Objects.equals(id, pedido.id) && Objects.equals(cliente, pedido.cliente) && Objects.equals(pagamento, pedido.pagamento) && Objects.equals(funcionario, pedido.funcionario) && Objects.equals(dataPedido, pedido.dataPedido) && statusPedido == pedido.statusPedido && Objects.equals(totalPedido, pedido.totalPedido) && Objects.equals(observacao, pedido.observacao) && Objects.equals(taxaEntrega, pedido.taxaEntrega) && Objects.equals(valorItens, pedido.valorItens);
+        return Objects.equals(id, pedido.id) && Objects.equals(cliente, pedido.cliente) && Objects.equals(pagamento, pedido.pagamento) && Objects.equals(funcionario, pedido.funcionario) && Objects.equals(dataPedido, pedido.dataPedido) && statusPedido == pedido.statusPedido && Objects.equals(totalPedido, pedido.totalPedido) && Objects.equals(observacao, pedido.observacao) && Objects.equals(taxaEntrega, pedido.taxaEntrega) && Objects.equals(valorItens, pedido.valorItens) && Objects.equals(itens, pedido.itens);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, cliente, pagamento, funcionario, dataPedido, statusPedido, totalPedido, observacao, taxaEntrega, valorItens);
+        return Objects.hash(id, cliente, pagamento, funcionario, dataPedido, statusPedido, totalPedido, observacao, taxaEntrega, valorItens, itens);
     }
 }
