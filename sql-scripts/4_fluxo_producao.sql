@@ -4,7 +4,7 @@ CREATE TYPE InsumoProducao AS (
 );
 
 -- Procedure de produção de produtos
-CREATE OR REPLACE PROCEDURE prc_processar_producao_dinamica()
+CREATE OR REPLACE PROCEDURE prc_processar_producao_dinamica(
     p_id_produto_fabricado INT,
     p_id_funcionario INT,
     p_quantidade_planejada INT,
@@ -130,7 +130,7 @@ CALL prc_processar_producao_dinamica(
         (10, 1.0),
         (12, 0.15),
         (11, 0.18),
-        (22, 0.1)
+        (21, 0.1)
     ]::InsumoProducao[]
 );
 
@@ -150,8 +150,8 @@ CALL prc_processar_producao_dinamica(
         (18, 0.3),
         (19, 0.05),
         (15, 0.1),
-        (23, 0.15),
-        (24, 0.2)
+        (22, 0.15),
+        (23, 0.2)
     ]::InsumoProducao[]
 );
 
@@ -168,7 +168,7 @@ CALL prc_processar_producao_dinamica(
     p_lista_insumos := ARRAY[
         (13, 0.2),
         (14, 0.15),
-        (25, 0.1)
+        (24, 0.1) 
     ]::InsumoProducao[]
 );
 
@@ -182,8 +182,8 @@ CALL prc_processar_producao_dinamica(
     p_quantidade_planejada := 15, 
     p_quantidade_real := 15,
     p_lista_insumos := ARRAY[
-    (10, 1.0),
-    (19, 0.05)
+        (10, 1.0),
+        (19, 0.05)
     ]::InsumoProducao[]
 );
 
@@ -198,7 +198,7 @@ CALL prc_processar_producao_dinamica(
     p_quantidade_real := 100,
     p_lista_insumos := ARRAY[
         (15, 0.05),
-        (21, 0.25)
+        (31, 0.25)
     ]::InsumoProducao[]
 );
 
@@ -213,9 +213,9 @@ CALL prc_processar_producao_dinamica(
     p_quantidade_planejada := 1, 
     p_quantidade_real := 1,
     p_lista_insumos := ARRAY[
-        (26, 0.5),
-        (27, 2.0),
-        (28, 0.1)
+        (25, 0.5),
+        (26, 2.0), 
+        (27, 0.1)
     ]::InsumoProducao[]
 );
 
@@ -229,8 +229,8 @@ CALL prc_processar_producao_dinamica(
     p_quantidade_planejada := 10, 
     p_quantidade_real := 10,
     p_lista_insumos := ARRAY[
-        (29, 0.1),
-        (30, 0.2)
+        (28, 0.1),
+        (29, 0.2)
     ]::InsumoProducao[]
 );
 
@@ -245,6 +245,6 @@ CALL prc_processar_producao_dinamica(
     p_quantidade_real := 15, 
     p_lista_insumos := ARRAY[
         (15, 0.02),
-        (31, 0.3)
+        (30, 0.3)
     ]::InsumoProducao[]
 );

@@ -22,7 +22,7 @@ INSERT INTO CategoriaProduto (id_categoria, nome, descricao) VALUES
 (9, 'Vegan', 'Opções totalmente vegetais.'),
 (10, 'Infantil', 'Combos e pratos para crianças.');
 
-INSERT INTO Insumo (id_insumo, nome, unidade, estoque_atual, perecivel, data_validade) VALUES
+INSERT INTO Insumo (id_insumo, nome, unidade_medida, estoque_atual, perecivel, data_validade) VALUES
 (10, 'Pão de Hambúrguer', 'UN', 50, TRUE, '2025-12-01'),
 (11, 'Carne Moída (Kg)', 'KG', 10, TRUE, '2025-11-15'),
 (12, 'Queijo Muçarela', 'KG', 5, TRUE, '2025-12-30'),
@@ -34,18 +34,19 @@ INSERT INTO Insumo (id_insumo, nome, unidade, estoque_atual, perecivel, data_val
 (18, 'Frango (Kg)', 'KG', 0, TRUE, '2025-11-20'),
 (19, 'Cebola', 'KG', 0, TRUE, '2025-12-05'),
 (20, 'Embalagem Descartável', 'UN', 0, FALSE, '2027-12-31'),
-(22, 'Bacon (Kg)', 'KG', 0, TRUE, '2025-12-05'),
-(23, 'Feijão (Kg)', 'KG', 0, FALSE, '2026-10-01'),
-(24, 'Arroz (Kg)', 'KG', 0, FALSE, '2026-10-01'),
-(25, 'Molho Caesar (L)', 'L', 0, TRUE, '2025-12-15'),
-(26, 'Leite Condensado (UN)', 'UN', 0, FALSE, '2026-05-01'),
-(27, 'Ovos (UN)', 'UN', 0, TRUE, '2025-12-10'),
-(28, 'Leite (L)', 'L', 0, TRUE, '2025-12-08'),
-(29, 'Sorvete (L)', 'L', 0, TRUE, '2026-01-01'),
-(30, 'Brownie Prémix (Kg)', 'KG', 0, FALSE, '2026-03-01'),
-(31, 'Nuggets de Frango (Kg)', 'KG', 0, TRUE, '2025-12-20');
+(21, 'Bacon (Kg)', 'KG', 0, TRUE, '2025-12-05'),
+(22, 'Feijão (Kg)', 'KG', 0, FALSE, '2026-10-01'),
+(23, 'Arroz (Kg)', 'KG', 0, FALSE, '2026-10-01'),
+(24, 'Molho Caesar (L)', 'L', 0, TRUE, '2025-12-15'),
+(25, 'Leite Condensado (UN)', 'UN', 0, FALSE, '2026-05-01'),
+(26, 'Ovos (UN)', 'UN', 0, TRUE, '2025-12-10'),
+(27, 'Leite (L)', 'L', 0, TRUE, '2025-12-08'),
+(28, 'Sorvete (L)', 'L', 0, TRUE, '2026-01-01'),
+(29, 'Brownie Prémix (Kg)', 'KG', 0, FALSE, '2026-03-01'),
+(30, 'Nuggets de Frango (Kg)', 'KG', 0, TRUE, '2025-12-20'),
+(31, 'Batata Inglesa (Kg)', 'KG', 50, TRUE, '2025-12-15');
 
-INSERT INTO Produto (id_produto, id_categoria, nome, unidade, estoque_atual, preco_venda, descricao) VALUES
+INSERT INTO Produto (id_produto, id_categoria, nome, unidade_medida, estoque_atual, preco_venda, descricao) VALUES
 (100, 2, 'X-Salada Gourmet', 'UN', 0, 25.00, 'Sanduíche completo com molho especial.'),
 (101, 1, 'Refrigerante Cola', 'L', 30, 8.00, 'Refrigerante 2 Litros.'),
 (102, 2, 'X-Bacon Simples', 'UN', 0, 22.00, 'Hambúrguer com bacon e queijo.'),

@@ -1,8 +1,10 @@
+-- Enum: Id do produto, quantidade do produto
 CREATE TYPE ItemPedidoInfo_v2 AS (
     id_produto INT,
     quantidade INT
 );
 
+-- Procedure: Cria um pagamento inicial com status PENDENTE
 CREATE OR REPLACE PROCEDURE inserir_pagamento(
     p_metodo_pagamento TipoPagamentoMetodo,
     OUT v_id_pagamento INT
@@ -15,6 +17,8 @@ BEGIN
     RETURNING id_pagamento INTO v_id_pagamento;
 END $$;
 
+-- Trigger: Liberar o pedido criado (para status EM_PROCESSAMENTO) quando o pagamento do pedido for alterado
+-- Aqui garante que o pedido so vai ser feito se o pagamento for efetuado antes.
 CREATE OR REPLACE FUNCTION fn_libera_pedido_por_pagamento()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -41,6 +45,12 @@ AFTER UPDATE OF status_pagamento ON Pagamento
 FOR EACH ROW
 EXECUTE FUNCTION fn_libera_pedido_por_pagamento();
 
+-- Processa novo pedido
+    --> Validação do Pagamento
+    --> Verificação de Estoque e Cálculo
+    --> Criação do Pedido
+    --> Processamento dos Itens e Baixa de Estoque
+    --> Registro da Entrega
 CREATE OR REPLACE PROCEDURE processar_novo_pedido(
     p_id_cliente INT,
     p_id_pagamento INT,
@@ -50,9 +60,8 @@ CREATE OR REPLACE PROCEDURE processar_novo_pedido(
     p_previsao_entrega INTERVAL,
     p_lista_itens ItemPedidoInfo_v2[],
     OUT p_total_calculado DECIMAL(10, 2),
-    p_observacao VARCHAR DEFAULT NULL,
-    p_status_entrega TipoEntregaStatus DEFAULT 'PREPARANDO'
-)
+    p_observacao VARCHAR DEFAULT NULL
+    )
 LANGUAGE plpgsql
 AS $$
 DECLARE
@@ -67,6 +76,7 @@ DECLARE
     v_preco_unitario DECIMAL(10, 2);
     v_status_pagamento TipoPagamentoStatus;
     v_metodo_pagamento TipoPagamentoMetodo;
+    v_status_entrega TipoEntregaStatus := 'PREPARANDO';
 BEGIN
     SELECT status_pagamento, metodo_pagamento
     INTO v_status_pagamento, v_metodo_pagamento
@@ -177,7 +187,7 @@ BEGIN
         p_id_funcionario_entrega,
         v_id_pedido,
         CURRENT_TIMESTAMP + p_previsao_entrega,
-        p_status_entrega
+        v_status_entrega
     )
     RETURNING id_entrega INTO v_id_entrega;
 
@@ -205,7 +215,6 @@ BEGIN
         ROW(101, 1)::ItemPedidoInfo_v2
         ],
         p_observacao := 'Entregue na portaria.',
-        p_status_entrega := 'EM_ROTA', 
         p_total_calculado := v_total_calculado
     );
 
@@ -239,7 +248,6 @@ BEGIN
             ROW(101, 1)::ItemPedidoInfo_v2
         ],
         p_observacao := 'Entregue na portaria. Pedido com Nuggets.',
-        p_status_entrega := 'EM_ROTA', 
         p_total_calculado := v_total_calculado
     );
 
@@ -259,7 +267,7 @@ DECLARE
     v_id_pagamento_1 INT;
     v_total_calculado DECIMAL(10, 2);
 BEGIN
-    CALL inserir_pagamento('CARTAO', v_id_pagamento_1);
+    CALL inserir_pagamento('PIX', v_id_pagamento_1);
 
     CALL processar_novo_pedido(
         p_id_cliente := 50, 
@@ -273,7 +281,6 @@ BEGIN
             ROW(101, 1)::ItemPedidoInfo_v2 
         ],
         p_observacao := 'Entregue na portaria. Pedido com Brownie.',
-        p_status_entrega := 'EM_ROTA', 
         p_total_calculado := v_total_calculado
     );
 

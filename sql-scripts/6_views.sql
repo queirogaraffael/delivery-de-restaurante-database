@@ -58,6 +58,7 @@ $$ LANGUAGE plpgsql;
 
 --- 1. Faturamento real por pedido - mostra quais pedidos geram mais receita e ajudam a identificar o ticket médio e produtos mais lucrativos.
 
+CREATE OR REPLACE VIEW vw_faturamento_real_pedidos AS
 SELECT 
     p.id_pedido,
     p.data_pedido,
@@ -67,12 +68,18 @@ FROM Pedido p
 ORDER BY faturamento_real DESC
 LIMIT 10;
 
+SELECT * FROM vw_faturamento_real_pedidos;
+
 --- 2. Percentual de insumos próximos da validade - mede o risco de perda de estoque por vencimento, ajudando no planejamento de compras.
 
+CREATE OR REPLACE VIEW vw_indicador_risco_estoque AS
 SELECT fn_insumos_proximos_validade() AS percentual_insumos_criticos;
+
+SELECT * FROM vw_indicador_risco_estoque;
 
 --- 3. Produtos mais vendidos - identifica itens que mais saem, úteis para promoções, reposição e precificação.
 
+CREATE OR REPLACE VIEW vw_top_produtos_vendidos AS
 SELECT 
     pr.id_produto,
     pr.nome,
@@ -83,8 +90,11 @@ GROUP BY pr.id_produto, pr.nome
 ORDER BY total_vendido DESC
 LIMIT 10;
 
+SELECT * FROM vw_top_produtos_vendidos;
+
 --- 4. Funcionários que mais entregam pedidos - mede produtividade e ajuda em distribuição de rotas ou bonificação.
 
+CREATE OR REPLACE VIEW vw_produtividade_entregadores AS
 SELECT 
     f.id_funcionario,
     f.nome,
@@ -94,8 +104,11 @@ JOIN Funcionario f ON f.id_funcionario = e.id_funcionario_entrega
 GROUP BY f.id_funcionario, f.nome
 ORDER BY entregas_realizadas DESC;
 
+SELECT * FROM vw_produtividade_entregadores;
+
 --- 5. Produtos que mais consomem insumos - mostra quais produtos têm maior custo operacional e exigem mais matéria-prima.
 
+CREATE OR REPLACE VIEW vw_consumo_insumos_por_produto AS
 SELECT 
     p.id_produto_fabricado AS id_produto,
     pr.nome AS produto,
@@ -105,3 +118,5 @@ JOIN Producao p ON p.id_producao = ii.id_producao
 JOIN Produto pr ON pr.id_produto = p.id_produto_fabricado
 GROUP BY p.id_produto_fabricado, pr.nome
 ORDER BY total_insumo_consumido DESC;
+
+SELECT * FROM vw_consumo_insumos_por_produto;

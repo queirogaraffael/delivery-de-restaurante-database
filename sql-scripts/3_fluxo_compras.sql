@@ -187,31 +187,31 @@ INSERT INTO NotaFiscalProduto (id_nota_fiscal, id_produto, quantidade_produto, v
 -- NF 108
 -- Laticínios/Congelados (Leite, Sorvete, Nuggets)
 INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
-(108, 28, 20, 4.00);
+(108, 27, 20, 4.00);
 INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
-(108, 29, 5, 20.00);
+(108, 28, 5, 20.00);
 INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
-(108, 31, 10, 10.00);
+(108, 30, 10, 10.00);
 
 -- NF 109
 -- Secos (Feijão, Arroz, Brownie Prémix)
 INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
-(109, 23, 30, 4.00);
+(109, 22, 30, 4.00);
 INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
-(109, 24, 50, 3.00);
+(109, 23, 50, 3.00);
 INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
-(109, 30, 5, 12.00);
+(109, 29, 5, 12.00);
 
 -- NF 110
 -- Molhos e Condensados (Molho Caesar, Leite Condensado)
 INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
-(110, 25, 10, 10.00);
+(110, 22, 10, 10.00);
 INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
-(110, 26, 20, 5.00);
+(110, 25, 20, 5.00);
 
 -- NF 111
 -- Outros (Bacon, Ovos)
 INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
-(111, 22, 10, 20.00);
+(111, 21, 10, 20.00);
 INSERT INTO NotaFiscalInsumo (id_nota_fiscal, id_insumo, quantidade_insumo, valor_unitario) VALUES 
-(111, 27, 30, 1.00);
+(111, 26, 30, 1.00);
