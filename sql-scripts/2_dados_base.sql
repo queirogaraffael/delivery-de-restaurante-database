@@ -1,3 +1,26 @@
+-- Trigger de validação da data de insumo
+
+CREATE OR REPLACE FUNCTION fn_validar_data_insumo()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.data_validade < CURRENT_DATE AND NEW.data_validade IS NOT NULL THEN
+        RAISE EXCEPTION 'ERRO: O insumo "%" não pode ser cadastrado pois está vencido. Validade: %, Hoje: %', 
+            NEW.nome, 
+            TO_CHAR(NEW.data_validade, 'DD/MM/YYYY'), 
+            TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY');
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_antes_inserir_insumo
+BEFORE INSERT ON Insumo
+FOR EACH ROW
+EXECUTE FUNCTION fn_validar_data_insumo();
+
+---
+
 INSERT INTO Funcionario (id_funcionario, nome, cpf, salario, cargo, telefone) VALUES
 (1, 'Joana Silva', '11111111111', 3000.00, 'Entregadora', '999999999'),
 (2, 'Carlos Souza', '22222222222', 4500.00, 'Gerente de Produção', '888888888'),
