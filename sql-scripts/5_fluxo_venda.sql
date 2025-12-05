@@ -1,4 +1,4 @@
--- Enum: Id do produto, quantidade do produto
+-- Id do produto, quantidade do produto
 CREATE TYPE ItemPedidoInfo_v2 AS (
     id_produto INT,
     quantidade INT
@@ -53,38 +53,33 @@ EXECUTE FUNCTION fn_libera_pedido_por_pagamento();
     --> Registro da Entrega
 CREATE OR REPLACE PROCEDURE processar_novo_pedido(
     p_id_cliente INT,
-    p_id_pagamento INT,
+    p_metodo_pagamento TipoPagamentoMetodo,
     p_id_funcionario_atendimento INT,
     p_id_funcionario_entrega INT,
     p_taxa_entrega DECIMAL(10, 2),
     p_previsao_entrega INTERVAL,
     p_lista_itens ItemPedidoInfo_v2[],
     OUT p_total_calculado DECIMAL(10, 2),
+    OUT p_id_pedido_gerado INT, 
+    OUT p_id_pagamento_gerado INT,
     p_observacao VARCHAR DEFAULT NULL
     )
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    v_id_pedido INT;
     v_id_entrega INT;
     v_valor_itens DECIMAL(10, 2) := 0.00;
     v_total_pedido DECIMAL(10, 2);
-
     v_registro_item ItemPedidoInfo_v2;
     v_status_pedido TipoPedidoStatus;
     v_estoque_atual INT;
     v_preco_unitario DECIMAL(10, 2);
-    v_status_pagamento TipoPagamentoStatus;
-    v_metodo_pagamento TipoPagamentoMetodo;
     v_status_entrega TipoEntregaStatus := 'PREPARANDO';
 BEGIN
-    SELECT status_pagamento, metodo_pagamento
-    INTO v_status_pagamento, v_metodo_pagamento
-    FROM Pagamento
-    WHERE id_pagamento = p_id_pagamento;
-
-    IF NOT FOUND THEN
-        RAISE EXCEPTION 'Pagamento com ID % não encontrado. Pedido cancelado.', p_id_pagamento;
+    CALL inserir_pagamento(p_metodo_pagamento, p_id_pagamento_gerado);
+    
+    IF p_id_pagamento_gerado IS NULL THEN
+        RAISE EXCEPTION 'Falha ao gerar registro de pagamento.';
     END IF;
 
     v_status_pedido := 'CRIADO';
@@ -106,7 +101,7 @@ BEGIN
         END IF;
 
         IF v_registro_item.quantidade <= 0 THEN
-            RAISE EXCEPTION 'Quantidade inválida (%). Deve ser maior que zero.',
+             RAISE EXCEPTION 'Quantidade inválida (%). Deve ser maior que zero.',
                 v_registro_item.quantidade;
         END IF;
 
@@ -137,7 +132,7 @@ BEGIN
     )
     VALUES (
         p_id_cliente,
-        p_id_pagamento,
+        p_id_pagamento_gerado,
         p_id_funcionario_atendimento,
         CURRENT_TIMESTAMP,
         v_status_pedido,
@@ -146,7 +141,7 @@ BEGIN
         p_taxa_entrega,
         p_observacao
     )
-    RETURNING id_pedido INTO v_id_pedido;
+    RETURNING id_pedido INTO p_id_pedido_gerado;
 
     FOREACH v_registro_item IN ARRAY p_lista_itens
     LOOP
@@ -155,25 +150,21 @@ BEGIN
         WHERE id_produto = v_registro_item.id_produto;
 
         INSERT INTO ItemPedido (id_produto, id_pedido, quantidade, preco)
-        VALUES (v_registro_item.id_produto, v_id_pedido, v_registro_item.quantidade, v_preco_unitario);
+        VALUES (v_registro_item.id_produto, p_id_pedido_gerado, v_registro_item.quantidade, v_preco_unitario);
 
         UPDATE Produto
         SET estoque_atual = estoque_atual - v_registro_item.quantidade
         WHERE id_produto = v_registro_item.id_produto;
 
         INSERT INTO AuditoriaEstoqueProduto (
-            id_produto,
-            tipo_movimento,
-            quantidade,
-            data,
-            motivo
+            id_produto, tipo_movimento, quantidade, data, motivo
         )
         VALUES (
             v_registro_item.id_produto,
             'SAIDA',
             v_registro_item.quantidade,
             CURRENT_TIMESTAMP,
-            'Reserva Pedido ID ' || v_id_pedido || ' (Pagamento PENDENTE)'
+            'Reserva Pedido ID ' || p_id_pedido_gerado || ' (Pagamento PENDENTE)'
         );
     END LOOP;
 
@@ -185,7 +176,7 @@ BEGIN
     )
     VALUES (
         p_id_funcionario_entrega,
-        v_id_pedido,
+        p_id_pedido_gerado,
         CURRENT_TIMESTAMP + p_previsao_entrega,
         v_status_entrega
     )
@@ -199,26 +190,28 @@ END $$;
 DO $$ 
 DECLARE 
     v_id_pagamento_1 INT;
+    v_id_pedido_gerado INT;
     v_total_calculado DECIMAL(10, 2);
 BEGIN
-    CALL inserir_pagamento('CARTAO', v_id_pagamento_1);
-
+    
     CALL processar_novo_pedido(
         p_id_cliente := 50, 
-        p_id_pagamento := v_id_pagamento_1,
+        p_metodo_pagamento := 'CARTAO',
         p_id_funcionario_atendimento := 1, 
         p_id_funcionario_entrega := 1,
         p_taxa_entrega := 5.00,
         p_previsao_entrega := interval '45 minutes',
         p_lista_itens := ARRAY[
-        ROW(100, 1)::ItemPedidoInfo_v2,
-        ROW(101, 1)::ItemPedidoInfo_v2
+            ROW(100, 1)::ItemPedidoInfo_v2,
+            ROW(101, 1)::ItemPedidoInfo_v2
         ],
         p_observacao := 'Entregue na portaria.',
-        p_total_calculado := v_total_calculado
+        p_total_calculado := v_total_calculado,
+        p_id_pedido_gerado := v_id_pedido_gerado,
+        p_id_pagamento_gerado := v_id_pagamento_1
     );
 
-    RAISE NOTICE 'Total calculado: %', v_total_calculado;
+    RAISE NOTICE 'Pedido % criado. Total: %. Pagamento ID: %', v_id_pedido_gerado, v_total_calculado, v_id_pagamento_1;
     
     UPDATE Pagamento 
     SET status_pagamento = 'APROVADO', data_pagamento = CURRENT_TIMESTAMP 
@@ -232,13 +225,12 @@ END $$;
 DO $$ 
 DECLARE 
     v_id_pagamento_1 INT;
+    v_id_pedido_gerado INT;
     v_total_calculado DECIMAL(10, 2);
 BEGIN
-    CALL inserir_pagamento('CARTAO', v_id_pagamento_1);
-
     CALL processar_novo_pedido(
         p_id_cliente := 50, 
-        p_id_pagamento := v_id_pagamento_1,
+        p_metodo_pagamento := 'CARTAO',
         p_id_funcionario_atendimento := 1, 
         p_id_funcionario_entrega := 1,
         p_taxa_entrega := 5.00,
@@ -248,10 +240,12 @@ BEGIN
             ROW(101, 1)::ItemPedidoInfo_v2
         ],
         p_observacao := 'Entregue na portaria. Pedido com Nuggets.',
-        p_total_calculado := v_total_calculado
+        p_total_calculado := v_total_calculado,
+        p_id_pedido_gerado := v_id_pedido_gerado,
+        p_id_pagamento_gerado := v_id_pagamento_1
     );
 
-    RAISE NOTICE 'Total calculado: %', v_total_calculado;
+    RAISE NOTICE 'Pedido % criado. Total: %. Pagamento ID: %', v_id_pedido_gerado, v_total_calculado, v_id_pagamento_1;
     
     UPDATE Pagamento 
     SET status_pagamento = 'APROVADO', data_pagamento = CURRENT_TIMESTAMP 
@@ -265,13 +259,12 @@ END $$;
 DO $$ 
 DECLARE 
     v_id_pagamento_1 INT;
+    v_id_pedido_gerado INT;
     v_total_calculado DECIMAL(10, 2);
 BEGIN
-    CALL inserir_pagamento('PIX', v_id_pagamento_1);
-
     CALL processar_novo_pedido(
         p_id_cliente := 50, 
-        p_id_pagamento := v_id_pagamento_1,
+        p_metodo_pagamento := 'PIX',
         p_id_funcionario_atendimento := 1, 
         p_id_funcionario_entrega := 1,
         p_taxa_entrega := 5.00,
@@ -281,10 +274,12 @@ BEGIN
             ROW(101, 1)::ItemPedidoInfo_v2 
         ],
         p_observacao := 'Entregue na portaria. Pedido com Brownie.',
-        p_total_calculado := v_total_calculado
+        p_total_calculado := v_total_calculado,
+        p_id_pedido_gerado := v_id_pedido_gerado,
+        p_id_pagamento_gerado := v_id_pagamento_1
     );
 
-    RAISE NOTICE 'Total calculado: %', v_total_calculado;
+    RAISE NOTICE 'Pedido % criado. Total: %. Pagamento ID: %', v_id_pedido_gerado, v_total_calculado, v_id_pagamento_1;
     
     UPDATE Pagamento 
     SET status_pagamento = 'APROVADO', data_pagamento = CURRENT_TIMESTAMP 

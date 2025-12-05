@@ -46,28 +46,28 @@ INSERT INTO CategoriaProduto (id_categoria, nome, descricao) VALUES
 (10, 'Infantil', 'Combos e pratos para crianças.');
 
 INSERT INTO Insumo (id_insumo, nome, unidade_medida, estoque_atual, perecivel, data_validade) VALUES
-(10, 'Pão de Hambúrguer', 'UN', 50, TRUE, '2025-12-01'),
-(11, 'Carne Moída (Kg)', 'KG', 10, TRUE, '2025-11-15'),
-(12, 'Queijo Muçarela', 'KG', 5, TRUE, '2025-12-30'),
-(13, 'Alface Americana', 'UN', 0, TRUE, '2025-11-10'),
-(14, 'Tomate', 'KG', 0, TRUE, '2025-11-12'),
+(10, 'Pão de Hambúrguer', 'UN', 50, TRUE, '2026-12-01'),
+(11, 'Carne Moída (Kg)', 'KG', 10, TRUE, '2026-11-15'),
+(12, 'Queijo Muçarela', 'KG', 5, TRUE, '2026-12-30'),
+(13, 'Alface Americana', 'UN', 0, TRUE, '2026-11-10'),
+(14, 'Tomate', 'KG', 0, TRUE, '2026-11-12'),
 (15, 'Óleo Vegetal (L)', 'L', 0, FALSE, '2026-06-01'),
 (16, 'Açúcar (Kg)', 'KG', 0, FALSE, '2027-01-01'),
 (17, 'Farinha de Trigo (Kg)', 'KG', 0, FALSE, '2026-03-01'),
-(18, 'Frango (Kg)', 'KG', 0, TRUE, '2025-11-20'),
-(19, 'Cebola', 'KG', 0, TRUE, '2025-12-05'),
+(18, 'Frango (Kg)', 'KG', 0, TRUE, '2026-11-20'),
+(19, 'Cebola', 'KG', 0, TRUE, '2026-12-05'),
 (20, 'Embalagem Descartável', 'UN', 0, FALSE, '2027-12-31'),
-(21, 'Bacon (Kg)', 'KG', 0, TRUE, '2025-12-05'),
+(21, 'Bacon (Kg)', 'KG', 0, TRUE, '2026-12-05'),
 (22, 'Feijão (Kg)', 'KG', 0, FALSE, '2026-10-01'),
 (23, 'Arroz (Kg)', 'KG', 0, FALSE, '2026-10-01'),
-(24, 'Molho Caesar (L)', 'L', 0, TRUE, '2025-12-15'),
+(24, 'Molho Caesar (L)', 'L', 0, TRUE, '2026-12-15'),
 (25, 'Leite Condensado (UN)', 'UN', 0, FALSE, '2026-05-01'),
-(26, 'Ovos (UN)', 'UN', 0, TRUE, '2025-12-10'),
-(27, 'Leite (L)', 'L', 0, TRUE, '2025-12-08'),
+(26, 'Ovos (UN)', 'UN', 0, TRUE, '2026-12-10'),
+(27, 'Leite (L)', 'L', 0, TRUE, '2026-12-08'),
 (28, 'Sorvete (L)', 'L', 0, TRUE, '2026-01-01'),
 (29, 'Brownie Prémix (Kg)', 'KG', 0, FALSE, '2026-03-01'),
-(30, 'Nuggets de Frango (Kg)', 'KG', 0, TRUE, '2025-12-20'),
-(31, 'Batata Inglesa (Kg)', 'KG', 50, TRUE, '2025-12-15');
+(30, 'Nuggets de Frango (Kg)', 'KG', 0, TRUE, '2026-12-20'),
+(31, 'Batata Inglesa (Kg)', 'KG', 50, TRUE, '2026-12-15');
 
 INSERT INTO Produto (id_produto, id_categoria, nome, unidade_medida, estoque_atual, preco_venda, descricao) VALUES
 (100, 2, 'X-Salada Gourmet', 'UN', 0, 25.00, 'Sanduíche completo com molho especial.'),

@@ -1,4 +1,4 @@
-CREATE DATABASE "delivery-de-restaurante";
+CREATE DATABASE "delivery_restaurante";
 
 CREATE TYPE TipoAuditoria AS ENUM ('ENTRADA', 'SAIDA', 'AJUSTE');
 CREATE TYPE TipoUnidade AS ENUM ('KG', 'G', 'ML', 'L', 'UN');

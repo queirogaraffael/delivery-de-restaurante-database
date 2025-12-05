@@ -1,7 +1,7 @@
 package com.unifacisa.delivery_de_restaurant.Controller;
 
-import com.unifacisa.delivery_de_restaurant.Entity.Funcionario;
-import com.unifacisa.delivery_de_restaurant.Service.FuncionarioService;
+import com.unifacisa.delivery_de_restaurant.domain.entities.Funcionario;
+import com.unifacisa.delivery_de_restaurant.domain.Service.FuncionarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

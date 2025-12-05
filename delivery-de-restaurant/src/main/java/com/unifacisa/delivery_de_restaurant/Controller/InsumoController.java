@@ -1,7 +1,7 @@
 package com.unifacisa.delivery_de_restaurant.Controller;
 
-import com.unifacisa.delivery_de_restaurant.Entity.Insumo;
-import com.unifacisa.delivery_de_restaurant.Service.InsumoService;
+import com.unifacisa.delivery_de_restaurant.domain.entities.Insumo;
+import com.unifacisa.delivery_de_restaurant.domain.Service.InsumoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +17,13 @@ public class InsumoController {
     @Autowired
     private InsumoService service;
 
+    @PostMapping
+    public ResponseEntity<Insumo> insert(@RequestBody Insumo insumo){
+        insumo = service.insert(insumo);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(insumo.getId()).toUri();
+        return ResponseEntity.created(uri).body(insumo);
+    }
+
     @GetMapping
     public ResponseEntity<List<Insumo>> findAll(){
         List<Insumo> insumos = service.findAll();
@@ -27,13 +34,6 @@ public class InsumoController {
     public ResponseEntity<Insumo> findById(@PathVariable Long id){
         Insumo insumo = service.findById(id);
         return ResponseEntity.ok().body(insumo);
-    }
-
-    @PostMapping
-    public ResponseEntity<Insumo> insert(@RequestBody Insumo insumo){
-        insumo = service.insert(insumo);
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(insumo.getId()).toUri();
-        return ResponseEntity.created(uri).body(insumo);
     }
 
     @DeleteMapping(value = "/{id}")
