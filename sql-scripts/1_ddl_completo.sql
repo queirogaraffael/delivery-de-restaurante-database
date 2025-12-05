@@ -15,6 +15,7 @@ CREATE TABLE Funcionario (
     salario DECIMAL(10,2) NOT NULL,
     cargo VARCHAR(255) NOT NULL,
     telefone VARCHAR(100),
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT pk_funcionario PRIMARY KEY (id_funcionario),
     CONSTRAINT uq_funcionario_cpf UNIQUE (cpf),
     CONSTRAINT uq_funcionario_telefone UNIQUE (telefone),
@@ -50,6 +51,7 @@ CREATE TABLE Insumo (
     estoque_atual INT,
     perecivel BOOLEAN,
     data_validade DATE,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT pk_insumo PRIMARY KEY (id_insumo),
     CONSTRAINT ck_insumo_estoque_nao_negativo CHECK (estoque_atual >= 0)
 );

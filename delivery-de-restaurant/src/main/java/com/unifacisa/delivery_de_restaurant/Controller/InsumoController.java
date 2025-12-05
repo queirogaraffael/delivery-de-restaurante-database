@@ -1,51 +1,45 @@
 package com.unifacisa.delivery_de_restaurant.Controller;
 
-import com.unifacisa.delivery_de_restaurant.domain.entities.Insumo;
 import com.unifacisa.delivery_de_restaurant.domain.Service.InsumoService;
+import com.unifacisa.delivery_de_restaurant.shared.dtos.insumos.InsumoRequestDTO;
+import com.unifacisa.delivery_de_restaurant.shared.dtos.insumos.InsumoResponseDTO;
+import com.unifacisa.delivery_de_restaurant.shared.dtos.insumos.InsumoUpdateDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
-@RequestMapping(value = "/insumo")
+@RequestMapping(value = "/insumos")
 public class InsumoController {
 
     @Autowired
     private InsumoService service;
 
     @PostMapping
-    public ResponseEntity<Insumo> insert(@RequestBody Insumo insumo){
-        insumo = service.insert(insumo);
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(insumo.getId()).toUri();
-        return ResponseEntity.created(uri).body(insumo);
-    }
-
-    @GetMapping
-    public ResponseEntity<List<Insumo>> findAll(){
-        List<Insumo> insumos = service.findAll();
-        return ResponseEntity.ok().body(insumos);
+    public ResponseEntity<InsumoResponseDTO> insert(@Valid @RequestBody InsumoRequestDTO insumo){
+        InsumoResponseDTO insumoResponseDTO = service.insert(insumo);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(insumoResponseDTO.getId()).toUri();
+        return ResponseEntity.created(uri).body(insumoResponseDTO);
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<Insumo> findById(@PathVariable Long id){
-        Insumo insumo = service.findById(id);
-        return ResponseEntity.ok().body(insumo);
-    }
-
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Insumo> delete(@PathVariable Long id){
-        service.delete(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<InsumoResponseDTO> findById(@PathVariable Long id){
+        InsumoResponseDTO insumoResponseDTO = service.findById(id);
+        return ResponseEntity.ok().body(insumoResponseDTO);
     }
 
     @PutMapping(value = "/{id}")
-    public ResponseEntity<Insumo> update(@PathVariable Long id, @RequestBody Insumo insumo){
-        insumo = service.update(id, insumo);
-        return ResponseEntity.ok().body(insumo);
+    public ResponseEntity<InsumoResponseDTO> update(@PathVariable Long id, @Valid @RequestBody InsumoUpdateDTO insumo){        InsumoResponseDTO insumoResponseDTO = service.update(id, insumo);
+        return ResponseEntity.ok().body(insumoResponseDTO);
     }
 
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id){
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

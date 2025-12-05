@@ -1,0 +1,338 @@
+{
+	"info": {
+		"_postman_id": "e06e9bd0-ffe2-40c8-8a47-78ca6f2d4b9f",
+		"name": "Conectar BD com POO",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25319040"
+	},
+	"item": [
+		{
+			"name": "CRUD Funcionário",
+			"item": [
+				{
+					"name": "Get Funcionário by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/funcionarios/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"funcionarios",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Funcionário",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nome\": \"João da Silva\",\r\n  \"cpf\": \"12065678900\",\r\n  \"salario\": 1800.00,\r\n  \"cargo\": \"Auxiliar de Cozinha\",\r\n  \"telefone\": \"123450378\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/funcionarios",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"funcionarios"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar funcionário",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nome\": \"João da Silva\",\r\n  \"cpf\": \"12345328900\",\r\n  \"salario\": 2400.00,\r\n  \"cargo\": \"Cozinheiro Júnior\",\r\n  \"telefone\": \"999991111\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/funcionarios/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"funcionarios",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apagar funcionário",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/funcionarios/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"funcionarios",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "CRUD Insumo",
+			"item": [
+				{
+					"name": "Get Insumo by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/insumos/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"insumos",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Insumo",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nome\": \"Leite Integral - Piracanjuba\",\r\n  \"unidadeMedida\": \"L\",\r\n  \"estoqueAtual\": 24,\r\n  \"perecivel\": true,\r\n  \"dataValidade\": \"2027-08-01\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/insumos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"insumos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Insumo",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nome\": \"Leite Integral - Piracanjuba\",\r\n  \"unidadeMedida\": \"L\",\r\n  \"estoqueAtual\": 50,\r\n  \"perecivel\": true,\r\n  \"dataValidade\": \"2027-08-01\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/insumos/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"insumos",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apagar Insumo",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"idInsumo\": 1,\r\n  \"nome\": \"Farinha de Trigo\",\r\n  \"unidadeMedida\": \"KG\",\r\n  \"estoqueAtual\": 120,\r\n  \"perecivel\": false,\r\n  \"dataValidade\": \"2025-05-10\"\r\n}\r\n"
+						},
+						"url": {
+							"raw": "http://localhost:8080/insumos/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"insumos",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Insumo Inválido (Trigger)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"nome\": \"Farinha de Trigo\",\r\n  \"unidadeMedida\": \"KG\",\r\n  \"estoqueAtual\": 120,\r\n  \"perecivel\": false,\r\n  \"dataValidade\": \"2025-05-10\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/insumos",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"insumos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Gerar Pedido (Procedure)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"idCliente\": 50,\r\n  \"metodoPagamento\": \"PIX\",\r\n  \"idFuncionarioAtendimento\": 2,\r\n  \"idFuncionarioEntrega\": 5,\r\n  \"taxaEntrega\": 5.00,\r\n  \"previsaoEntregaMinutos\": 45,\r\n  \"observacao\": \"Sem açúcar\",\r\n  \"itens\": [\r\n    {\r\n      \"idProduto\": 112,\r\n      \"quantidade\": 1\r\n    }\r\n  ]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/pedidos/gerar",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"pedidos",
+						"gerar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Total Pedido(Função)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/pedidos/:id/total",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"pedidos",
+						":id",
+						"total"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

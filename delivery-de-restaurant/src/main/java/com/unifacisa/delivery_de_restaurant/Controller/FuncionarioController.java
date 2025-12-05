@@ -1,51 +1,53 @@
 package com.unifacisa.delivery_de_restaurant.Controller;
 
-import com.unifacisa.delivery_de_restaurant.domain.entities.Funcionario;
 import com.unifacisa.delivery_de_restaurant.domain.Service.FuncionarioService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.unifacisa.delivery_de_restaurant.shared.dtos.funcionarios.FuncionarioRequestDTO;
+import com.unifacisa.delivery_de_restaurant.shared.dtos.funcionarios.FuncionarioResponseDTO;
+import com.unifacisa.delivery_de_restaurant.shared.dtos.funcionarios.FuncionarioUpdateDTO;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
-@RequestMapping(value = "/funcionario")
+@RequestMapping(value = "/funcionarios")
 public class FuncionarioController {
 
-    @Autowired
-    private FuncionarioService service;
+    private final FuncionarioService service;
 
-    @GetMapping
-    public ResponseEntity<List<Funcionario>> findAll(){
-        List<Funcionario> funcionarios = service.findAll();
-        return ResponseEntity.ok().body(funcionarios);
-    }
-
-    @GetMapping(value = "/{id}")
-    public ResponseEntity<Funcionario> findById(@PathVariable Long id){
-        Funcionario funcionario = service.findById(id);
-        return ResponseEntity.ok().body(funcionario);
+    public FuncionarioController(FuncionarioService service) {
+        this.service = service;
     }
 
     @PostMapping
-    public ResponseEntity<Funcionario> insert(@RequestBody Funcionario funcionario){
-        funcionario = service.insert(funcionario);
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(funcionario.getId()).toUri();
-        return ResponseEntity.created(uri).body(funcionario);
+    public ResponseEntity<FuncionarioResponseDTO> insert(@Valid @RequestBody FuncionarioRequestDTO funcionario){
+        FuncionarioResponseDTO funcionarioCriado = service.insert(funcionario);
+
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(funcionarioCriado.getId())
+                .toUri();
+
+        return ResponseEntity.created(uri).body(funcionarioCriado);
     }
 
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Funcionario> delete(@PathVariable Long id){
-        service.delete(id);
-        return ResponseEntity.noContent().build();
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<FuncionarioResponseDTO> findById(@PathVariable Long id){
+        FuncionarioResponseDTO funcionarioResponseDTO = service.findById(id);
+        return ResponseEntity.ok().body(funcionarioResponseDTO);
     }
 
     @PutMapping(value = "/{id}")
-    public ResponseEntity<Funcionario> update(@PathVariable Long id, @RequestBody Funcionario funcionario){
-        funcionario = service.update(id, funcionario);
-        return ResponseEntity.ok().body(funcionario);
+    public ResponseEntity<FuncionarioResponseDTO> update(@PathVariable Long id, @Valid @RequestBody FuncionarioUpdateDTO funcionario){
+        FuncionarioResponseDTO funcionarioResponseDTO = service.update(id, funcionario);
+        return ResponseEntity.ok().body(funcionarioResponseDTO);
     }
 
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id){
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

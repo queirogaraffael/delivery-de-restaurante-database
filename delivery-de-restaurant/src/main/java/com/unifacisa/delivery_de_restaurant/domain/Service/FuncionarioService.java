@@ -1,46 +1,75 @@
 package com.unifacisa.delivery_de_restaurant.domain.Service;
 
-import com.unifacisa.delivery_de_restaurant.domain.entities.Funcionario;
 import com.unifacisa.delivery_de_restaurant.domain.Repositories.FuncionarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.unifacisa.delivery_de_restaurant.domain.entities.Funcionario;
+import com.unifacisa.delivery_de_restaurant.exceptions.ResourceNotFoundException;
+import com.unifacisa.delivery_de_restaurant.shared.dtos.funcionarios.FuncionarioRequestDTO;
+import com.unifacisa.delivery_de_restaurant.shared.dtos.funcionarios.FuncionarioResponseDTO;
+import com.unifacisa.delivery_de_restaurant.shared.dtos.funcionarios.FuncionarioUpdateDTO;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class FuncionarioService {
 
-    @Autowired
-    private FuncionarioRepository funcionarioRepository;
+    private final FuncionarioRepository funcionarioRepository;
 
-    public List<Funcionario> findAll(){
-        return funcionarioRepository.findAll();
+    public FuncionarioService(FuncionarioRepository funcionarioRepository) {
+        this.funcionarioRepository = funcionarioRepository;
     }
 
-    public Funcionario findById(Long id){
-        return funcionarioRepository.findById(id).get();
+    public FuncionarioResponseDTO insert(FuncionarioRequestDTO dto) {
+        Funcionario entity = new Funcionario();
+        updateEntityFromDTO(entity, dto);
+        entity.setAtivo(true);
+
+        entity = funcionarioRepository.save(entity);
+        return toResponseDTO(entity);
     }
 
-    public Funcionario insert(Funcionario funcionario){
-        return funcionarioRepository.save(funcionario);
+    public FuncionarioResponseDTO findById(Long id) {
+        Funcionario entity = funcionarioRepository.findByIdAndAtivoTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Funcionário não encontrado ou inativo"));
+        return toResponseDTO(entity);
     }
 
-    public void delete(Long id){
-        funcionarioRepository.deleteById(id);
+    public FuncionarioResponseDTO update(Long id, FuncionarioUpdateDTO dto) {
+        Funcionario entity = funcionarioRepository.findByIdAndAtivoTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Funcionário não encontrado ou inativo"));
+
+        entity.setNome(dto.getNome());
+        entity.setCpf(dto.getCpf());
+        entity.setSalario(dto.getSalario());
+        entity.setCargo(dto.getCargo());
+        entity.setTelefone(dto.getTelefone());
+
+        entity = funcionarioRepository.save(entity);
+        return toResponseDTO(entity);
     }
 
-    public Funcionario update(Long id, Funcionario funcionario){
-        Funcionario entity = funcionarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Funcionario Nao Encontrado"));
-        updateData(entity, funcionario);
-        return funcionarioRepository.save(entity);
+    public void delete(Long id) {
+        Funcionario entity = funcionarioRepository.findByIdAndAtivoTrue(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Funcionário não encontrado para exclusão"));
 
+        entity.setAtivo(false);
+        funcionarioRepository.save(entity);
     }
 
-    private void updateData(Funcionario entity, Funcionario funcionario){
-        entity.setNome(funcionario.getNome());
-        entity.setCpf(funcionario.getCpf());
-        entity.setSalario(funcionario.getSalario());
-        entity.setTelefone(funcionario.getTelefone());
+    private void updateEntityFromDTO(Funcionario entity, FuncionarioRequestDTO dto) {
+        entity.setNome(dto.getNome());
+        entity.setCpf(dto.getCpf());
+        entity.setSalario(dto.getSalario());
+        entity.setCargo(dto.getCargo());
+        entity.setTelefone(dto.getTelefone());
+    }
+
+    private FuncionarioResponseDTO toResponseDTO(Funcionario entity) {
+        return new FuncionarioResponseDTO(
+                entity.getId(),
+                entity.getNome(),
+                entity.getCpf(),
+                entity.getSalario(),
+                entity.getCargo(),
+                entity.getTelefone()
+        );
     }
 }

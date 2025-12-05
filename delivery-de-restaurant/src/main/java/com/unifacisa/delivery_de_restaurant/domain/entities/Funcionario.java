@@ -32,4 +32,7 @@ public class Funcionario {
 
     @Column(unique = true)
     private String telefone;
+
+    @Column(nullable = false)
+    private Boolean ativo = true;
 }

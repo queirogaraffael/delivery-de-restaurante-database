@@ -2,14 +2,16 @@ package com.unifacisa.delivery_de_restaurant.domain.entities;
 
 import com.unifacisa.delivery_de_restaurant.domain.enums.TipoUnidade;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Entity
-@Getter
-@Setter
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Insumo {
 
     @Id
@@ -30,4 +32,7 @@ public class Insumo {
 
     @Column(name = "data_validade")
     private LocalDate dataValidade;
+
+    @Column(nullable = false)
+    private Boolean ativo = true;
 }
