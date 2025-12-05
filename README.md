@@ -1,166 +1,124 @@
-# 🍔 Sistema de Gerenciamento de Delivery de Restaurante
+# 🍔 Sistema de Delivery de Restaurante
 
-Este projeto foi desenvolvido com o objetivo de criar um **sistema completo de gerenciamento para operações de Delivery de Restaurante**, incluindo os fluxos de **Vendas**, **Produção**, **Compras** e **Controle de Estoque**.
+Este projeto consiste em um sistema completo para gestão de um
+restaurante delivery. A arquitetura adotada é a **Logic-in-Database**,
+onde a integridade dos dados, regras de negócio complexas (como baixa de
+estoque e validação de pedidos) e auditoria são processadas diretamente
+no banco de dados **PostgreSQL** através de *Stored Procedures* e
+*Triggers*.
 
-O foco principal é garantir rastreabilidade e consistência no estoque, controle financeiro dos pedidos, movimentação de insumos e produtos acabados, e uma visão consolidada para análise gerencial.
-
-## 📘 Objetivo da Aplicação
-
-A aplicação integra os principais fluxos de negócio de um restaurante que opera por delivery:
-
-| Módulo       | Descrição                                                          |
-| ------------ | ------------------------------------------------------------------ |
-| **Vendas**   | Registro de pedidos, itens e acompanhamento de entrega.            |
-| **Produção** | Controle de fabricação de produtos a partir de insumos.            |
-| **Compras**  | Registro de notas fiscais de fornecedores para entrada de estoque. |
-| **Estoque**  | Controle centralizado e auditável de movimentações.                |
-
-## 🧭 Modelo Lógico do Banco de Dados
-
-Abaixo está o modelo lógico utilizado no projeto:
-
-![Modelo Lógico](docs/modelo-logico.png)
-
-## ⚙️ Requisitos Funcionais
-
-- Cadastro, edição e listagem de **Clientes**, **Funcionários**, **Produtos**, **Insumos** e **Fornecedores**.
-- Registro de **Pedidos** com múltiplos itens.
-- Registro de **Notas Fiscais** de fornecedores para entrada de estoque.
-- Controle do **ciclo de produção**, consumindo insumos e gerando produtos acabados.
-- **Gestão automática de estoque** com histórico completo via `TRIGGER`.
-- Controle de **pagamento** do pedido e atualização de status: `PENDENTE`, `APROVADO`, `REJEITADO`.
-- **Rastreamento de entrega** associada a um funcionário (`Entrega`).
-- Emissão de **relatórios e views analíticas** (vendas, produção, estoque).
-
-## 🧱 Requisitos Não Funcionais
-
-- Banco de dados **PostgreSQL** com forte tipagem (uso de `ENUM`).
-- Garantia de **integridade transacional** em fluxos complexos.
-- Performance e consistência em módulos de vendas e auditoria.
-- Controle de acesso baseado em **perfil de usuário** (ex.: Cozinheiro, Entregador, Gerente).
-
-## 📋 Regras de Negócio
-
-- O **estoque** de `Produto` e `Insumo` **não é atualizado diretamente**: todas as movimentações ocorrem via **tabela `AuditoriaEstoqueProduto`** (mantida por `TRIGGER`).
-- O consumo de insumos na produção é registrado em **unidades inteiras**.
-- Status de pedidos: `CRIADO`, `EM_PROCESSAMENTO`, `PAGO`, `CANCELADO`, `CONCLUIDO`.
-- CPF e E-mail de **Cliente** devem ser **únicos**.
-- Uma `Entrega` está sempre vinculada a **um único pedido**.
-- O pagamento deve ser registrado antes do processamento do pedido.
-
-## 🧩 Estrutura do Banco de Dados
-
-### 🐘 Banco
-
-- PostgreSQL 16
-- Modelagem do esquema realizada via **draw.io**
-
-### 📦 Arquivos SQL (Estrutura + Simulação de Fluxos)
-
-| Arquivo                    | Função                                                                 | Etapa do Processo      |
-| -------------------------- | ---------------------------------------------------------------------- | ---------------------- |
-| **`1_ddl_completo.sql`**   | Criação completa das tabelas, tipos ENUM, chaves e restrições          | Estruturação do banco  |
-| **`2_dados_base.sql`**     | Inserção de clientes, funcionários, produtos, insumos e dados iniciais | Configuração inicial   |
-| **`3_fluxo_compras.sql`**  | Registro de Notas Fiscais e entradas de estoque                        | Abastecimento          |
-| **`4_fluxo_producao.sql`** | Consumo de insumos e geração de produtos acabados                      | Cozinha / produção     |
-| **`5_fluxo_venda.sql`**    | Registro de pedidos, pagamento, entrega e baixas de estoque            | Operação de venda real |
-
-### Views Analíticas (`6_views.sql`)
-
-As Views ajudam na análise do restaurante, reunindo informações que facilitam consultas e relatórios.
-
-1. **vw_estoque_detalhado**  
-   Mostra o estoque atual de produtos e insumos junto do histórico de movimentações. Útil para auditoria e controle de perdas.
-
-2. **vw_detalhes_pedidos**  
-   Exibe pedidos completos: cliente, itens, valores, status de pagamento e entrega. Principal visão para análise de vendas.
-
-3. **vw_rastreio_notas_fiscais**  
-   Consolida informações de notas fiscais de compras (insumos e produtos). Suporte ao controle de custos e fornecedores.
-
-4. **vw_analise_producao**  
-   Relaciona produção de produtos com consumo de insumos. Permite calcular custo real e validar baixas de estoque.
-
-5. **vw_pedidos_pendentes_entrega**  
-   Lista pedidos ainda não entregues. Auxilia no fluxo de expedição e organização de entregadores.
-
-6. **vw_analise_vendas_categoria**  
-   Agrupa vendas por categoria, destacando volume e receita. Usado para decisões estratégicas de cardápio e estoque.
-
-## ▶️ Como Executar os Scripts SQL
-
-Os arquivos `.sql` estão organizados na pasta `sql-scripts`, seguindo a ordem correta de execução:
-
-```
-sql-scripts/
-│
-├── 1_ddl_completo.sql
-├── 2_dados_base.sql
-├── 3_fluxo_compras.sql
-├── 4_fluxo_producao.sql
-├── 5_fluxo_venda.sql
-└── 6_views.sql
-```
-
-> **Observação:** o arquivo `6_views.sql` contém **views analíticas** que devem ser criadas **após** a execução dos scripts de estrutura e dos fluxos (1 → 5). As views dependem das tabelas e dados gerados pelos scripts anteriores.
-
-### Pré-requisitos
-
-- PostgreSQL instalado
-- Um banco de dados criado (exemplo: `delivery_db`)
-- Usuário com permissões para criar objetos (tables, views, types) no banco
-
-### Passo a Passo via Terminal (psql)
-
-Execute os scripts **na ordem** abaixo:
-
-```bash
-psql -U seu_usuario -d delivery_db -f sql-scripts/1_ddl_completo.sql
-psql -U seu_usuario -d delivery_db -f sql-scripts/2_dados_base.sql
-psql -U seu_usuario -d sql-scripts/3_fluxo_compras.sql
-psql -U seu_usuario -d delivery_db -f sql-scripts/4_fluxo_producao.sql
-psql -U seu_usuario -d delivery_db -f sql-scripts/5_fluxo_venda.sql
-# Por fim, rode as views (opcionalmente em um step separado)
-psql -U seu_usuario -d delivery_db -f sql-scripts/6_views.sql
-```
-
-Se preferir, você pode rodar tudo em uma linha (atenção à ordem):
-```bash
-psql -U seu_usuario -d delivery_db -f sql-scripts/1_ddl_completo.sql && psql -U seu_usuario -d delivery_db -f sql-scripts/2_dados_base.sql && psql -U seu_usuario -d delivery_db -f sql-scripts/3_fluxo_compras.sql && psql -U seu_usuario -d delivery_db -f sql-scripts/4_fluxo_producao.sql && psql -U seu_usuario -d delivery_db -f sql-scripts/5_fluxo_venda.sql && psql -U seu_usuario -d delivery_db -f sql-scripts/6_views.sql
-```
-
-### Passo a Passo via pgAdmin
-
-1. Abra o banco de dados `delivery_db`.
-2. Vá em **Query Tool**.
-3. Selecione `File > Open` e abra o primeiro script (`1_ddl_completo.sql`) e execute com **F5**.
-4. Repita o processo para os demais arquivos na ordem listada acima.
-5. No final, abra e execute o `6_views.sql` para criar as views analíticas.
-
-### Sugestões / Problemas comuns
-
-- **Erro de dependência:** rode os scripts na ordem correta. Views podem falhar se alguma tabela ou coluna não existir ainda.
-- **Permissões:** execute com um usuário que tenha permissão de criação de views e objetos no schema.
-- **Search_path:** se você usa schemas customizados, ajuste `search_path` no começo dos scripts ou execute `SET search_path TO seu_schema;` antes de rodar os scripts.
-
+O **Back-end em Spring Boot** atua como uma camada de serviço robusta,
+expondo essas funcionalidades via API REST e gerenciando a comunicação
+entre o cliente e o banco de dados.
 
 ## 🚀 Tecnologias Utilizadas
 
-| Tecnologia                                  | Uso                         |
-| ------------------------------------------- | --------------------------- |
-| PostgreSQL 16                               | Banco de dados              |
-| SQL (DDL, DML, Views, Triggers, Transações) | Implementação da lógica     |
-| draw.io                                     | Modelagem do banco e fluxos |
+-   **Java 17** & **Spring Boot 3+**: Framework para a API REST.
+-   **PostgreSQL**: Banco de dados relacional (com uso intensivo de
+    PL/pgSQL).
+-   **Maven**: Gerenciamento de dependências e build.
+-   **JPA / Hibernate**: Mapeamento Objeto-Relacional (para consultas
+    simples e chamada de procedures).
+-   **Lombok**: Redução de código boilerplate.
 
-## 👥 Autores
+## 📂 Estrutura do Projeto
 
-| Nome                  | Função                        |
-| --------------------- | ----------------------------- |
-| Raffael Queiroga      | Modelagem e Fluxo de Produção |
-| Thiago Nunes          | Estrutura e Regras de Estoque |
-| Lucas Gabriel Andrade | Fluxo de Pedidos e Entrega    |
-| Luiz Felipe           | Notas Fiscais e Compras       |
+O repositório está organizado nos seguintes diretórios principais:
 
-## 📄 Licença
+-   **`delivery-de-restaurant/`**: Contém o código fonte da aplicação
+    Java (Spring Boot).
+    -   `src/main/java`: Controllers, Entities, Repositories e Services.
+    -   `src/main/resources`: Configurações da aplicação
+        (`application.properties`).
+-   **`sql-scripts/`**: Contém os scripts SQL essenciais para a criação
+    e funcionamento do banco. Eles estão numerados para execução
+    sequencial.
+-   **`docs/`**: Documentação técnica, incluindo o modelo lógico do
+    banco de dados (imagens e PDFs) e visão de negócio.
+-   **`postman/`**: Coleção do Postman (`.json`) para testar os
+    endpoints da API rapidamente.
 
-Projeto desenvolvido para fins acadêmicos. Uso livre para estudo, análise ou melhoria.
+## ⚙️ Pré-requisitos
+
+-   JDK 17 instalado.
+-   PostgreSQL instalado e rodando.
+
+------------------------------------------------------------------------
+
+## 🛠️ Como Rodar o Projeto
+
+### Passo 1: Configuração do Banco de Dados
+
+Como o projeto depende fortemente da lógica no banco, esta etapa é
+crucial. Você deve executar os scripts na ordem numérica correta para
+evitar erros de dependência.
+
+1.  Crie um banco de dados no PostgreSQL com o nome
+    `delivery_restaurante`.
+2.  Execute os scripts da pasta `sql-scripts` na seguinte ordem:
+
+  ------------------------------------------------------------------------
+  Ordem                   Arquivo                  Descrição
+  ----------------------- ------------------------ -----------------------
+  1️⃣                      `1_ddl_completo.sql`     Cria as tabelas, tipos
+                                                   (ENUMs) e restrições.
+
+  2️⃣                      `2_dados_base.sql`       Popula o banco com
+                                                   dados iniciais
+                                                   (Clientes, Produtos,
+                                                   etc).
+
+  3️⃣                      `3_fluxo_compras.sql`    Cria triggers para
+                                                   entrada de estoque via
+                                                   Nota Fiscal.
+
+  4️⃣                      `4_fluxo_producao.sql`   Cria procedures para
+                                                   transformar insumos em
+                                                   produtos.
+
+  5️⃣                      `5_fluxo_venda.sql`      Cria a procedure
+                                                   principal de venda e
+                                                   triggers de pagamento.
+
+  6️⃣                      `6_views.sql`            Cria as views para
+                                                   relatórios gerenciais.
+  ------------------------------------------------------------------------
+
+### Passo 2: Configuração da API
+
+1.  Navegue até o diretório do backend:
+    `bash     cd delivery-de-restaurant`
+2.  Abra o arquivo `src/main/resources/application.properties` e
+    verifique as credenciais do banco de dados. Ajuste se o seu
+    usuário/senha forem diferentes do padrão configurado:
+    `properties     spring.datasource.username=postgres     spring.datasource.password=1234567`
+3.  Execute a aplicação usando o Maven Wrapper:
+    -   **Windows:** `cmd     mvnw.cmd spring-boot:run`
+    -   **Linux/Mac:** `bash     ./mvnw spring-boot:run`
+
+A API estará disponível em: `http://localhost:8080`
+
+------------------------------------------------------------------------
+
+## 🔌 Utilizando a API
+
+A aplicação expõe endpoints para interagir com o banco de dados. As
+operações complexas (como criar um pedido) chamam diretamente as
+procedures do banco.
+
+### Principais Endpoints
+
+-   **Funcionários**: `GET /funcionarios`, `POST /funcionarios`,
+    `PUT /funcionarios/{id}`
+-   **Insumos**: `GET /insumos`, `POST /insumos`
+-   **Pedidos**:
+    -   `POST /pedidos/gerar`: Cria um pedido completo (chama a
+        procedure `processar_novo_pedido`).
+    -   `GET /pedidos/{id}/total`: Calcula o total do pedido via função
+        do banco.
+
+### Testando com Postman
+
+Para facilitar os testes, importe o arquivo localizado em
+`postman/Conectar BD com POO.postman_collection.json` para o seu
+Postman. Lá você encontrará requisições prontas para todos os fluxos.
