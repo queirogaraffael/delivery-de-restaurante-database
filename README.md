@@ -1,4 +1,4 @@
-# 🍔 Sistema de Delivery de Restaurante
+# Sistema de Delivery de Restaurante
 
 Este projeto consiste em um sistema completo para gestão de um
 restaurante delivery. A arquitetura adotada é a **Logic-in-Database**,
@@ -11,7 +11,7 @@ O **Back-end em Spring Boot** atua como uma camada de serviço robusta,
 expondo essas funcionalidades via API REST e gerenciando a comunicação
 entre o cliente e o banco de dados.
 
-## 🚀 Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 -   **Java 17** & **Spring Boot 3+**: Framework para a API REST.
 -   **PostgreSQL**: Banco de dados relacional (com uso intensivo de
@@ -21,7 +21,7 @@ entre o cliente e o banco de dados.
     simples e chamada de procedures).
 -   **Lombok**: Redução de código boilerplate.
 
-## 📂 Estrutura do Projeto
+## Estrutura do Projeto
 
 O repositório está organizado nos seguintes diretórios principais:
 
@@ -38,14 +38,14 @@ O repositório está organizado nos seguintes diretórios principais:
 -   **`postman/`**: Coleção do Postman (`.json`) para testar os
     endpoints da API rapidamente.
 
-## ⚙️ Pré-requisitos
+## Pré-requisitos
 
 -   JDK 17 instalado.
 -   PostgreSQL instalado e rodando.
 
 ------------------------------------------------------------------------
 
-## 🛠️ Como Rodar o Projeto
+## Como Rodar o Projeto
 
 ### Passo 1: Configuração do Banco de Dados
 
@@ -60,27 +60,27 @@ evitar erros de dependência.
   ------------------------------------------------------------------------
   Ordem                   Arquivo                  Descrição
   ----------------------- ------------------------ -----------------------
-  1️⃣                      `1_ddl_completo.sql`     Cria as tabelas, tipos
+  1                      `1_ddl_completo.sql`     Cria as tabelas, tipos
                                                    (ENUMs) e restrições.
 
-  2️⃣                      `2_dados_base.sql`       Popula o banco com
+  2                      `2_dados_base.sql`       Popula o banco com
                                                    dados iniciais
                                                    (Clientes, Produtos,
                                                    etc).
 
-  3️⃣                      `3_fluxo_compras.sql`    Cria triggers para
+  3                      `3_fluxo_compras.sql`    Cria triggers para
                                                    entrada de estoque via
                                                    Nota Fiscal.
 
-  4️⃣                      `4_fluxo_producao.sql`   Cria procedures para
+  4                      `4_fluxo_producao.sql`   Cria procedures para
                                                    transformar insumos em
                                                    produtos.
 
-  5️⃣                      `5_fluxo_venda.sql`      Cria a procedure
+  5                      `5_fluxo_venda.sql`      Cria a procedure
                                                    principal de venda e
                                                    triggers de pagamento.
 
-  6️⃣                      `6_views.sql`            Cria as views para
+  6                      `6_views.sql`            Cria as views para
                                                    relatórios gerenciais.
   ------------------------------------------------------------------------
 
@@ -100,7 +100,7 @@ A API estará disponível em: `http://localhost:8080`
 
 ------------------------------------------------------------------------
 
-## 🔌 Utilizando a API
+## Utilizando a API
 
 A aplicação expõe endpoints para interagir com o banco de dados. As
 operações complexas (como criar um pedido) chamam diretamente as
